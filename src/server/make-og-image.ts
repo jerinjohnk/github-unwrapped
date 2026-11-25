@@ -1,95 +1,44 @@
-import {
-  renderStillOnLambda,
-  speculateFunctionName,
-} from "@remotion/lambda/client";
+import { existsSync } from "node:fs";
 import type { z } from "zod";
 import type { ProfileStats, ogImageSchema } from "../config.js";
-import { DISK, RAM, SITE_NAME, TIMEOUT, parseTopLanguage } from "../config.js";
-import { getIgStory, getOgImage, saveIgStory, saveOgImage } from "./db.js";
-import { getRandomRegion } from "./render.js";
+import { parseTopLanguage } from "../config.js";
+import { renderStillLocally } from "./local-renderer.js";
+import { igStoryFile, ogImageFile } from "./store.js";
 
-export const makeOrGetOgImage = async (profileStats: ProfileStats) => {
-  const ogImage = await getOgImage(profileStats.username);
-  if (ogImage) {
-    return ogImage.url;
+const makeImageProps = (
+  profileStats: ProfileStats,
+): z.infer<typeof ogImageSchema> => ({
+  pullRequests: profileStats.totalPullRequests,
+  contributionData: profileStats.contributionData,
+  issues: profileStats.closedIssues,
+  login: profileStats.username,
+  stars: profileStats.totalStars,
+  topLanguage: profileStats.topLanguages[0]
+    ? parseTopLanguage(profileStats.topLanguages[0])
+    : null,
+  weekdays: profileStats.allWeekdays,
+  longestStreak: profileStats.longestStreak,
+  totalContributions: profileStats.totalContributions,
+});
+
+const makeOrGetImage = async (
+  profileStats: ProfileStats,
+  compositionId: "og-image" | "ig-story",
+  outputFile: string,
+) => {
+  if (!existsSync(outputFile)) {
+    await renderStillLocally({
+      compositionId,
+      inputProps: makeImageProps(profileStats),
+      outputFile,
+    });
   }
 
-  const functionName = speculateFunctionName({
-    diskSizeInMb: DISK,
-    memorySizeInMb: RAM,
-    timeoutInSeconds: TIMEOUT,
-  });
-
-  const schema: z.infer<typeof ogImageSchema> = {
-    pullRequests: profileStats.totalPullRequests,
-    contributionData: profileStats.contributionData,
-    issues: profileStats.closedIssues,
-    login: profileStats.username,
-    stars: profileStats.totalStars,
-    topLanguage: profileStats.topLanguages[0]
-      ? parseTopLanguage(profileStats.topLanguages[0])
-      : null,
-    weekdays: profileStats.allWeekdays,
-    longestStreak: profileStats.longestStreak,
-    totalContributions: profileStats.totalContributions,
-  };
-
-  const region = getRandomRegion();
-
-  const { url } = await renderStillOnLambda({
-    composition: "og-image",
-    functionName,
-    imageFormat: "jpeg",
-    serveUrl: SITE_NAME,
-    inputProps: schema,
-    privacy: "public",
-    region,
-    jpegQuality: 100,
-  });
-  await saveOgImage({ url, username: profileStats.username });
-
-  return url;
+  return outputFile;
 };
 
-export const makeOrGetIgStory = async (profileStats: ProfileStats) => {
-  const ogImage = await getIgStory(profileStats.username);
-  if (ogImage) {
-    return ogImage.url;
-  }
+export const makeOrGetOgImage = (profileStats: ProfileStats) =>
+  makeOrGetImage(profileStats, "og-image", ogImageFile(profileStats.username));
 
-  const functionName = speculateFunctionName({
-    diskSizeInMb: DISK,
-    memorySizeInMb: RAM,
-    timeoutInSeconds: TIMEOUT,
-  });
-
-  const schema: z.infer<typeof ogImageSchema> = {
-    pullRequests: profileStats.totalPullRequests,
-    contributionData: profileStats.contributionData,
-    issues: profileStats.closedIssues,
-    login: profileStats.username,
-    stars: profileStats.totalStars,
-    topLanguage: profileStats.topLanguages[0]
-      ? parseTopLanguage(profileStats.topLanguages[0])
-      : null,
-    weekdays: profileStats.allWeekdays,
-    longestStreak: profileStats.longestStreak,
-    totalContributions: profileStats.totalContributions,
-  };
-
-  const region = getRandomRegion();
-
-  const { url } = await renderStillOnLambda({
-    composition: "ig-story",
-    functionName,
-    imageFormat: "jpeg",
-    serveUrl: SITE_NAME,
-    inputProps: schema,
-    privacy: "public",
-    region,
-    jpegQuality: 100,
-  });
-  await saveIgStory({ url, username: profileStats.username });
-
-  return url;
-};
+export const makeOrGetIgStory = (profileStats: ProfileStats) =>
+  makeOrGetImage(profileStats, "ig-story", igStoryFile(profileStats.username));

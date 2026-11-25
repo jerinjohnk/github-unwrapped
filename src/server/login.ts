@@ -4,14 +4,12 @@ import {
   backendCredentials,
   makeRedirectUriBackend,
 } from "../helpers/domain.js";
+import { getStatsFromGitHub } from "./get-stats-from-github.js";
 import {
-  clearFailedRendersForUsername,
-  clearIgStoriesForUsername,
-  clearOgImagesForUsername,
+  clearImagesForUsername,
   clearRendersForUsername,
   insertProfileStats,
-} from "./db.js";
-import { getStatsFromGitHub } from "./get-stats-from-github.js";
+} from "./store.js";
 
 export const loginEndPoint = async (request: Request, response: Response) => {
   if (request.method === "OPTIONS") {
@@ -40,6 +38,11 @@ export const loginEndPoint = async (request: Request, response: Response) => {
   }
 
   const { CLIENT_SECRET, VITE_CLIENT_ID } = backendCredentials();
+  if (!CLIENT_SECRET || !VITE_CLIENT_ID) {
+    throw new Error(
+      "Sign in with GitHub is not configured. Set VITE_CLIENT_ID and CLIENT_SECRET in .env.",
+    );
+  }
 
   const formdata = new FormData();
   formdata.append("client_id", VITE_CLIENT_ID);
@@ -80,13 +83,9 @@ export const loginEndPoint = async (request: Request, response: Response) => {
     throw new Error("No stats");
   }
 
-  if (query.reset === "true") {
-    await clearRendersForUsername({ username: stats.username });
-    await clearOgImagesForUsername({ username: stats.username });
-    await clearIgStoriesForUsername({ username: stats.username });
-  } else {
-    await clearFailedRendersForUsername({ username: stats.username });
-  }
+  // Stats change when signing in (private contributions), so re-render.
+  clearRendersForUsername({ username: stats.username });
+  clearImagesForUsername({ username: stats.username });
 
   await insertProfileStats({
     type: "found",

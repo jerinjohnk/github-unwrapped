@@ -1,9 +1,15 @@
 import { frontendCredentials, makeRedirectUriFrontend } from "./env";
 
+// Sign in with GitHub needs an OAuth app (VITE_CLIENT_ID + CLIENT_SECRET).
+// Without one, the sign-in buttons are hidden.
+export const isGitHubSignInEnabled = Boolean(
+  frontendCredentials().VITE_CLIENT_ID,
+);
+
 export const signInWithGitHubLink = (reset = false) => {
   const params = new URLSearchParams();
   params.append("redirect_uri", makeRedirectUriFrontend(reset));
-  params.append("client_id", frontendCredentials().VITE_CLIENT_ID);
+  params.append("client_id", frontendCredentials().VITE_CLIENT_ID ?? "");
   params.append("scope", "repo");
 
   const url = new URL("https://github.com/login/oauth/authorize");

@@ -1,15 +1,8 @@
 import type { Request, Response } from "express";
 import { StatsRequest } from "../config.js";
-import {
-  clearIgStoriesForUsername,
-  clearOgImagesForUsername,
-  clearRendersForUsername,
-  getResetAttempts,
-  registerResetAttempt,
-} from "./db.js";
-import { sendDiscordMessage } from "./discord.js";
 import { getStatsFromGitHubOrCache } from "./get-stats-from-github-or-cache.js";
-import { getRandomGithubToken } from "./github-token.js";
+import { getGithubToken } from "./github-token.js";
+import { clearImagesForUsername, clearRendersForUsername } from "./store.js";
 
 export const executeGitHubGraphQlQuery = async ({
   username,
@@ -31,7 +24,7 @@ export const executeGitHubGraphQlQuery = async ({
   const rateLimit = res.headers.get("x-ratelimit-remaining");
 
   if (Number(rateLimit) < 1000) {
-    sendDiscordMessage(`Rate limit remaining: ${rateLimit}`);
+    console.warn(`GitHub GraphQL rate limit remaining: ${rateLimit}`);
   }
 
   const response = await res.json();
@@ -68,20 +61,13 @@ export const statsEndPoint = async (request: Request, response: Response) => {
 
     await getStatsFromGitHubOrCache({
       username,
-      token: getRandomGithubToken(),
+      token: getGithubToken(),
       refreshCache,
     });
 
     if (refreshCache) {
-      const resetCount = await getResetAttempts(username);
-      if (resetCount > 3) {
-        throw new Error("Only three reset attempts possible");
-      }
-
-      await registerResetAttempt(username);
-      await clearRendersForUsername({ username });
-      await clearOgImagesForUsername({ username });
-      await clearIgStoriesForUsername({ username });
+      clearRendersForUsername({ username });
+      clearImagesForUsername({ username });
     }
 
     return response.json({});

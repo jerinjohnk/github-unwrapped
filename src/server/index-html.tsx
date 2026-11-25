@@ -4,8 +4,8 @@ import { fileURLToPath } from "node:url";
 import path from "path";
 import type { ViteDevServer } from "vite";
 import { backendCredentials } from "../helpers/domain.js";
-import { getProfileStatsFromCache } from "./db.js";
 import { replaceAppHead } from "./seo.js";
+import { getProfileStatsFromCache } from "./store.js";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const rootDir = path.join(__dirname, "..", "..");

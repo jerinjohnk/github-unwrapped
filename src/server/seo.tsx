@@ -1,11 +1,9 @@
 // organize-imports-ignore
 import React from "react";
-import * as Sentry from "@sentry/node";
 import { renderToString } from "react-dom/server";
-import { getRandomGithubToken } from "./github-token.js";
+import { getGithubToken } from "./github-token.js";
 import { backendCredentials } from "../helpers/domain.js";
 import { getStatsFromGitHubOrCache } from "./get-stats-from-github-or-cache.js";
-import { sendDiscordMessage } from "./discord.js";
 import { YEAR_TO_REVIEW } from "./year.js";
 
 type AppHead = {
@@ -55,7 +53,7 @@ const makeAppHead = async (
 
   const stats = await getStatsFromGitHubOrCache({
     username,
-    token: getRandomGithubToken(),
+    token: getGithubToken(),
     refreshCache: false,
   });
 
@@ -127,9 +125,7 @@ export const replaceAppHead = async (
     const { head, status, cache } = await makeAppHead(username, params);
     return { html: html.replace("<!--app-head-->", head), status, cache };
   } catch (err) {
-    console.log(err);
-    sendDiscordMessage(`Error rendering HTML: ${(err as Error).stack}`);
-    Sentry.captureException(err);
+    console.error(err);
 
     return {
       html: html.replace(

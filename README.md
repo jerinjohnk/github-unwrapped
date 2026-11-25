@@ -2,7 +2,7 @@
 
 **Try it out live:** [GitHubUnwrapped.com](https://www.githubunwrapped.com)
 
-A platform that generates a year-in-review video for each GitHub user. Built with Vite 5, Remotion and AWS Lambda.
+A platform that generates a year-in-review video for each GitHub user. Built with Vite 5 and Remotion.
 
 ## Make your own
 
@@ -17,49 +17,61 @@ Feel free to fork and use this repository as a template! Note the legal disclaim
 - 2022: [`github-unwrapped-2022` Repo](https://github.com/remotion-dev/github-unwrapped-2022)
 - 2021: [`github-unwrapped-2021` Repo](https://github.com/remotion-dev/github-unwrapped-2021)
 
-## Setup
+## Run locally
 
-1. Run `npm i` to install dependencies.
-2. Rename `.env.example` to `.env`
-3. Set up your AWS account according to the [Remotion Lambda - Setup guide](https://remotion.dev/docs/lambda/setup). We use multiple accounts for load-balancing:
-   - Use `AWS_KEY_1` instead of `REMOTION_AWS_ACCESS_KEY_ID` and `AWS_SECRET_1` instead of `REMOTION_AWS_SECRET_ACCESS_KEY`.
-   - You can use `AWS_KEY_2` and `AWS_SECRET_2` to load-balance between two accounts, or paste the same credentials as before to use the same account.
-   - In `src/helpers/set-env-for-key.ts`, we rotate the environment variables.
-4. Deploy the functions into your AWS account(s):
+This fork runs entirely on your machine: stats are fetched from GitHub, cached as files,
+and videos are rendered locally with Remotion. No AWS, MongoDB, Discord or Sentry is needed.
 
-   ```
-   npx tsx deploy.ts
-   ```
+### Requirements
 
-   Note that some AWS regions are disabled by default. [If you get an error, enable them or limit yourself to only default ones.](https://remotion.dev/docs/lambda/troubleshooting/security-token)
+- Node.js 18.18 or newer
+- A GitHub personal access token: create one at https://github.com/settings/tokens
+  (classic or fine-grained, no scopes needed for public data)
+- Around 1 GB of free disk space. Remotion downloads a headless Chrome on the first render.
 
-5. For caching the videos and GitHub API responses, set up a MongoDB (we use a free MongoDB Atlas Cloud instance) to save the videos. Set the connection string by filling out the values in `.env`.
-6. For fetching data from GitHub, create a personal access token in your user settings (no need to grant any scopes, the GraphQL API needs to be authenticated to get public information) and set it as `GITHUB_TOKEN_1`. Adding more tokens `GITHUB_TOKEN_2` etc. will rotate the personal access tokens.
-7. Provide `DISCORD_CHANNEL` and `DISCORD_TOKEN` values to send monitoring logs to Discord.
-8. Add a `SENTRY_DSN` environment variable to get error reports.
+### Setup
 
-You now have all environment variables.
+```console
+npm install
+cp .env.example .env   # then paste your token into GITHUB_TOKEN
+```
 
-Run the web app:
+### Generate a video in the web app
 
 ```console
 npm run dev
 ```
 
-Edit the template in the Remotion Studio:
+Open http://localhost:8080 and enter a GitHub username. The first render bundles the
+project and takes a few minutes. After that, the MP4 is cached and downloadable.
+
+Local data lives in `.local-data/` (gitignored):
+
+| Path                                     | Contents                    |
+| ---------------------------------------- | --------------------------- |
+| `.local-data/stats/<user>.json`          | Cached GitHub stats         |
+| `.local-data/renders/<user>-<theme>.mp4` | Rendered videos             |
+| `.local-data/og/`, `.local-data/ig/`     | Social preview / IG stories |
+
+To refetch a user's stats and re-render, visit `/<username>?reset=true` or delete their files there.
+
+### Optional: Sign in with GitHub (private contributions)
+
+Create a [GitHub OAuth app](https://github.com/settings/developers) with the callback URL
+`http://localhost:8080/login`, then set `VITE_CLIENT_ID` and `CLIENT_SECRET` in `.env`.
+Without these, the sign-in buttons are hidden.
+
+### Edit the video
 
 ```console
 npm run remotion
 ```
 
-To deploy, connect your repository to [Render](https://render.com/). Don't forget to also set the environment variables there too.
+This opens Remotion Studio with the sample data.
 
-## Scaling strategy
+### Change the year
 
-To allow thousands of people to render their video at the same time, we applied multiple strategies for scaling:
-
-- Caching the video whenever possible. Before each render, a MongoDB database lock is created to avoid multiple renders for the same GitHub user to be accidentally created.
-- Renders are distributed across an array of AWS regions and accounts to prevent hitting the [concurrency limit](https://www.remotion.dev/docs/lambda/troubleshooting/rate-limit).
+The reviewed year is set in [`src/helpers/year.ts`](src/helpers/year.ts).
 
 ## Credits
 

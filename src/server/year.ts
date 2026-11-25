@@ -1,1 +1,1 @@
-export const YEAR_TO_REVIEW = 2025;
+export { YEAR_TO_REVIEW } from "../helpers/year.js";

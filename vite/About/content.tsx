@@ -1,5 +1,8 @@
 import { YEAR_TO_REVIEW } from "../../src/helpers/year";
-import { signInWithGitHubLink } from "../sign-in-with-github";
+import {
+  isGitHubSignInEnabled,
+  signInWithGitHubLink,
+} from "../sign-in-with-github";
 import styles from "../styles.module.css";
 
 export type AboutItemContent = {
@@ -54,21 +57,24 @@ export const content: Array<AboutItemContent> = [
           Furthermore, you may need to login with GitHub and authorize the
           organizations you want to include in your video.
         </div>
+        {isGitHubSignInEnabled ? (
+          <>
+            <p>
+              To reset your statistics if you logged in with GitHub, click the
+              button below.
+            </p>
+            <a
+              className={styles.aboutButton}
+              style={{ lineHeight: "43px" }}
+              href={signInWithGitHubLink(true)}
+            >
+              Login again
+            </a>
+          </>
+        ) : null}
         <p>
-          To reset your statistics if you logged in with GitHub, click the
-          button below.
-        </p>
-        <a
-          className={styles.aboutButton}
-          style={{ lineHeight: "43px" }}
-          href={signInWithGitHubLink(true)}
-        >
-          Login again
-        </a>
-        <p>
-          If you just entered your username, visit
-          githubunwrapped.com/YourUsername?reset=true to reset your statistics
-          (can be done up to three times).
+          If you just entered your username, visit /YourUsername?reset=true to
+          refetch your statistics and re-render your video.
         </p>
       </>
     ),

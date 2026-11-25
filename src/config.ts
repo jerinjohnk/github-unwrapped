@@ -2,11 +2,6 @@ import { zColor } from "@remotion/zod-types";
 import { random } from "remotion/no-react";
 import { z } from "zod";
 
-export const SITE_NAME = `unwrapped2025`;
-export const RAM = 1200;
-export const DISK = 10240;
-export const TIMEOUT = 120;
-
 const availablePlanets = ["Ice", "Silver", "Gold", "Leafy", "Fire"] as const;
 export type Planet = (typeof availablePlanets)[number];
 

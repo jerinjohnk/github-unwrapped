@@ -14,6 +14,7 @@ import {
 
 import React, { useMemo } from "react";
 import { type Planet, type Rocket } from "../../src/config";
+import { YEAR_TO_REVIEW } from "../../src/helpers/year";
 import { Gradient } from "../Gradients/NativeGradient";
 import { FPS } from "../Issues/make-ufo-positions";
 import { accentColorToGradient } from "../Opening/TitleImage";
@@ -228,7 +229,7 @@ export const ContributionsScene: React.FC<{
               }}
             >
               <div style={{ textAlign: "left", paddingLeft: 10 }}>
-                <ContributionNumber currentNumber={2025} suffix="" />
+                <ContributionNumber currentNumber={YEAR_TO_REVIEW} suffix="" />
                 <ContributionLabel>@{username}</ContributionLabel>
               </div>
               <div style={{ flex: 1 }} />

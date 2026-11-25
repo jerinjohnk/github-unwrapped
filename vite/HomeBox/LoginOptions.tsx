@@ -2,6 +2,7 @@ import React, { useCallback, useState } from "react";
 import { Button } from "../Button/Button";
 import { Input } from "../Input/Input";
 import { SignInWithGitHub } from "../SignInWithGitHub";
+import { isGitHubSignInEnabled } from "../sign-in-with-github";
 import styles from "./styles.module.css";
 
 type Props = {
@@ -66,11 +67,15 @@ export const LoginOptions: React.FC<Props> = ({
           Unwrap
         </Button>
       </form>
-      <div className={styles.divider} />
-      <div className={styles.privateContributions}>
-        Want to include private activity?
-        <SignInWithGitHub />
-      </div>
+      {isGitHubSignInEnabled ? (
+        <>
+          <div className={styles.divider} />
+          <div className={styles.privateContributions}>
+            Want to include private activity?
+            <SignInWithGitHub />
+          </div>
+        </>
+      ) : null}
     </div>
   );
 };

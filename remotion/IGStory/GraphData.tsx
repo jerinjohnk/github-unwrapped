@@ -1,5 +1,6 @@
 import React from "react";
 import { interpolateColors } from "remotion";
+import { YEAR_TO_REVIEW } from "../../src/helpers/year";
 import { PANE_TEXT_COLOR } from "../TopLanguages/Pane";
 
 const Dot: React.FC<{
@@ -77,7 +78,7 @@ export const ContributionGraphic: React.FC<{
           paddingLeft: 20,
         }}
       >
-        <Stat align="left" data={2025} label={login} />
+        <Stat align="left" data={YEAR_TO_REVIEW} label={login} />
         <div style={{ flex: 1 }} />
         <Stat align="right" data={longestStreak} label="Longest streak" />
         <div style={{ width: 30 }} />

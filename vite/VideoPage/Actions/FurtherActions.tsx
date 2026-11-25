@@ -1,7 +1,10 @@
 import { Link } from "@tanstack/react-router";
 import { PrivateContributionsIcon } from "../../../icons/PrivateContributionsIcon";
 import { UserIcon } from "../../../icons/UserIcon";
-import { signInWithGitHubLink } from "../../sign-in-with-github";
+import {
+  isGitHubSignInEnabled,
+  signInWithGitHubLink,
+} from "../../sign-in-with-github";
 import { FurtherAction } from "./FurtherAction";
 import styles from "./styles.module.css";
 
@@ -19,7 +22,8 @@ export const FurtherActions: React.FC = () => {
             label="Unwrap another user"
           />
         </Link>
-        {window.__USER__!.loggedInWithGitHub ? null : (
+        {window.__USER__!.loggedInWithGitHub ||
+        !isGitHubSignInEnabled ? null : (
           <a href={signInWithGitHubLink()}>
             <FurtherAction
               icon={(params) => (

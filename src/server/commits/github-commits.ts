@@ -1,4 +1,3 @@
-import { sendDiscordMessage } from "../discord.js";
 import { YEAR_TO_REVIEW } from "../year.js";
 import type { Commit, commits } from "./commits.js";
 import { mapApiResponseToCommits } from "./map-api-response-to-commits.js";
@@ -27,14 +26,14 @@ const getGithubCommits = async (
   );
 
   if (rateLimit < 10) {
-    sendDiscordMessage(`Rate limit remaining: ${rateLimit}`);
+    console.warn(`GitHub REST rate limit remaining: ${rateLimit}`);
   }
 
   // https://docs.github.com/en/rest/overview/rate-limits-for-the-rest-api?apiVersion=2022-11-28#exceeding-the-rate-limit
   const rateLimitHit = response.status === 403 || response.status === 429;
 
   if (rateLimitHit) {
-    sendDiscordMessage("Rate limit hit");
+    console.warn("GitHub REST rate limit hit");
     throw new TypeError(RATE_LIMIT_TOKEN);
   }
 

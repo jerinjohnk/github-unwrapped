@@ -2,8 +2,9 @@ import { z } from "zod";
 import { REDIRECT_URL_ENDPOINT } from "../src/helpers/redirect-url";
 
 const frontendSchema = z.object({
-  VITE_CLIENT_ID: z.string(),
-  VITE_HOST: z.string(),
+  // Optional: only needed for "Sign in with GitHub".
+  VITE_CLIENT_ID: z.string().optional(),
+  VITE_HOST: z.string().default("http://localhost:8080"),
 });
 
 export const frontendCredentials = () => frontendSchema.parse(import.meta.env);

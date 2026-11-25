@@ -1,5 +1,5 @@
-import { getProfileStatsFromCache, insertProfileStats } from "./db.js";
 import { getStatsFromGitHub } from "./get-stats-from-github.js";
+import { getProfileStatsFromCache, insertProfileStats } from "./store.js";
 
 export const getStatsFromGitHubOrCache = async ({
   username,

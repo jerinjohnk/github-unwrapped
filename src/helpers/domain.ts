@@ -2,52 +2,40 @@ import { config } from "dotenv";
 import { z } from "zod";
 import { REDIRECT_URL_ENDPOINT } from "./redirect-url.js";
 
-const parseAwsCredentials = () => {
-  return z
-    .object({
-      AWS_KEY_1: z.string(),
-      AWS_SECRET_1: z.string(),
-      AWS_KEY_2: z.string().optional(),
-      AWS_SECRET_2: z.string().optional(),
-      AWS_KEY_3: z.string().optional(),
-      AWS_SECRET_3: z.string().optional(),
-      AWS_KEY_4: z.string().optional(),
-      AWS_SECRET_4: z.string().optional(),
-    })
-    .parse(process.env);
-};
-
-let parsedAwsCredentials: ReturnType<typeof parseAwsCredentials> | null = null;
-
-export const awsCredentials = () => {
-  if (!parsedAwsCredentials) {
-    config();
-    parsedAwsCredentials = parseAwsCredentials();
-  }
-
-  return parsedAwsCredentials;
-};
-
 const parseBackendCredentials = () => {
   return z
     .object({
-      VITE_CLIENT_ID: z.string(),
-      VITE_HOST: z.string(),
-      CLIENT_SECRET: z.string(),
-      NODE_ENV: z.enum(["development", "production"]),
-      DB_NAME: z.string(),
-      DB_USER: z.string(),
-      DB_PASSWORD: z.string(),
-      DB_HOST: z.string(),
-      DISCORD_CHANNEL: z.string(),
-      DISCORD_TOKEN: z.string(),
-      GITHUB_TOKEN_1: z.string(),
-      GITHUB_TOKEN_2: z.string(),
-      GITHUB_TOKEN_3: z.string(),
-      GITHUB_TOKEN_4: z.string(),
-      GITHUB_TOKEN_5: z.string(),
-      GITHUB_TOKEN_6: z.string(),
-      SENTRY_DSN: z.string(),
+      // Required: a GitHub personal access token (no scopes needed for public data).
+      // GITHUB_TOKEN_1 is still accepted for backwards compatibility.
+      GITHUB_TOKEN: z
+        .string()
+        .min(1)
+        .optional()
+        .or(z.literal("").transform(() => undefined)),
+      GITHUB_TOKEN_1: z
+        .string()
+        .min(1)
+        .optional()
+        .or(z.literal("").transform(() => undefined)),
+      VITE_HOST: z.string().default("http://localhost:8080"),
+      NODE_ENV: z.enum(["development", "production"]).default("development"),
+      // Optional: GitHub OAuth app, only needed for "Sign in with GitHub"
+      // (includes private contributions in the stats).
+      VITE_CLIENT_ID: z.string().optional(),
+      CLIENT_SECRET: z.string().optional(),
+    })
+    .transform(({ GITHUB_TOKEN, GITHUB_TOKEN_1, ...rest }, ctx) => {
+      const token = GITHUB_TOKEN ?? GITHUB_TOKEN_1;
+      if (!token) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message:
+            "GITHUB_TOKEN is missing. Create a personal access token at https://github.com/settings/tokens and add it to your .env file.",
+        });
+        return z.NEVER;
+      }
+
+      return { ...rest, GITHUB_TOKEN: token };
     })
     .parse(process.env);
 };

@@ -1,4 +1,3 @@
-import * as Sentry from "@sentry/node";
 import react from "@vitejs/plugin-react-swc";
 import bodyParser from "body-parser";
 import type { Express, NextFunction, Request, Response } from "express";
@@ -7,8 +6,6 @@ import serveStatic from "serve-static";
 import { createServer } from "vite";
 import { REDIRECT_URL_ENDPOINT } from "../helpers/redirect-url.js";
 import { dashboardEndpoint } from "./dashboard.js";
-import { sendDiscordMessage } from "./discord.js";
-import { emailEndpoint } from "./email.js";
 import { faviconEndPoint } from "./favicon.js";
 import { statsEndPoint } from "./fetch-stats.js";
 import {
@@ -21,8 +18,8 @@ import {
 } from "./index-html.js";
 import { loginEndPoint } from "./login.js";
 import { renderEndPoint } from "./render.js";
-import { errorEndpoint } from "./sentry-test.js";
 import { igStoryImageEndpoint, socialMediaPreview } from "./social-preview.js";
+import { rendersDir } from "./store.js";
 
 const apiEndpointWrapper = (
   endpoint: (
@@ -36,12 +33,7 @@ const apiEndpointWrapper = (
       await endpoint(req, res, next);
     } catch (error) {
       const err = error as Error;
-      if (nodeEnv !== "development") {
-        Sentry.captureException(err);
-        sendDiscordMessage(`Error: ${err.stack}`);
-      }
-
-      console.log(err);
+      console.error(err);
 
       res.status(500).end(err.message);
     }
@@ -76,13 +68,19 @@ export const startServer = async () => {
 
   app.post("/api/stats", apiEndpointWrapper(statsEndPoint));
 
-  app.post("/api/error", apiEndpointWrapper(errorEndpoint));
   app.get("/api/dashboard", apiEndpointWrapper(dashboardEndpoint));
-  app.post("/api/email", apiEndpointWrapper(emailEndpoint));
   app.get("/og/:username.jpg", apiEndpointWrapper(socialMediaPreview));
   app.get("/og/:username.jpeg", apiEndpointWrapper(socialMediaPreview));
   app.get("/ig/:username.jpg", apiEndpointWrapper(igStoryImageEndpoint));
   app.get("/ig/:username.jpeg", apiEndpointWrapper(igStoryImageEndpoint));
+
+  // Locally rendered videos, downloadable by the frontend.
+  app.use(
+    "/renders",
+    serveStatic(rendersDir, {
+      setHeaders: (res) => res.setHeader("Content-Disposition", "attachment"),
+    }),
+  );
 
   app.get("/favicon.ico", apiEndpointWrapper(faviconEndPoint));
   app.get(REDIRECT_URL_ENDPOINT, apiEndpointWrapper(loginEndPoint));

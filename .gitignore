@@ -41,7 +41,10 @@ out/
 .env.staging
 dist
 
-# Sentry Config File
-.sentryclirc
 
 build
+# Locally cached stats, rendered videos and images
+.local-data
+
+# graft's local graph cache — regenerable, not committed (run `graft build`).
+/graft/

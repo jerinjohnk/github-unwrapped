@@ -1,33 +1,28 @@
 {
-  "name": "remotion-next-example",
+  "name": "github-unwrapped-local",
   "version": "0.1.0",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "cross-env NODE_ENV=development tsx watch src/server/index.ts",
-    "build": "eslint . --ext .ts,.tsx && node build.mjs && npm run sentry:sourcemaps",
+    "build": "eslint . --ext .ts,.tsx && node build.mjs",
     "start": "cross-env NODE_ENV=production node dist/server/index.js",
     "lint": "eslint . --ext .ts,.tsx",
     "remotion": "remotion studio",
-    "render": "remotion render",
-    "deploy": "tsx deploy.ts",
-    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org remotion-dev --project node ./dist && sentry-cli sourcemaps upload --org remotion-dev --project node ./dist"
+    "render": "remotion render remotion/index.ts Main"
   },
   "dependencies": {
     "@remotion/bundler": "4.0.240",
     "@remotion/cli": "4.0.240",
     "@remotion/google-fonts": "4.0.240",
-    "@remotion/lambda": "4.0.240",
     "@remotion/noise": "4.0.240",
     "@remotion/paths": "4.0.240",
     "@remotion/player": "4.0.240",
     "@remotion/preload": "4.0.240",
+    "@remotion/renderer": "4.0.240",
     "@remotion/shapes": "4.0.240",
     "@remotion/transitions": "4.0.240",
     "@remotion/zod-types": "4.0.240",
-    "@sentry/cli": "^2.22.3",
-    "@sentry/node": "^7.83.0",
-    "@sentry/profiling-node": "^1.2.6",
     "@tanstack/react-router": "^0.0.1-beta.212",
     "@tanstack/router-devtools": "^0.0.1-beta.245",
     "@types/body-parser": "^1.19.5",
@@ -36,8 +31,6 @@
     "body-parser": "^1.20.2",
     "eslint-plugin-require-extensions": "^0.1.3",
     "express": "^4.18.2",
-    "mongodb": "^6.3.0",
-    "p-limit": "^6.1.0",
     "polished": "^4.2.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -68,6 +61,6 @@
     "typescript": "^5.2.2"
   },
   "engines": {
-    "node": "18.18.0"
+    "node": ">=18.18.0"
   }
 }
