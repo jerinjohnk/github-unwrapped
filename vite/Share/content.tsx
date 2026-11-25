@@ -12,8 +12,7 @@ import {
 import { DownloadButton } from "../VideoPage/Sidebar/DownloadButton";
 import styles from "./styles.module.css";
 
-const exampleDescription =
-  "This is my GitHubUnwrapped! Get your own: https://githubunwrapped.com";
+const exampleDescription = "This is my GitHubUnwrapped!";
 
 const CopyDescriptionButton = () => {
   const [copied, setCopied] = useState(false);
