@@ -1,8 +1,8 @@
 import type { Request, Response } from "express";
 import { StatsRequest } from "../config.js";
 import { resolveRange } from "../helpers/date-range.js";
+import { badKeyError, rateLimitError } from "./api-errors.js";
 import { getStatsFromGitHubOrCache } from "./get-stats-from-github-or-cache.js";
-import { badKeyError, rateLimitError } from "./github-errors.js";
 import { getGithubToken } from "./github-token.js";
 import { clearImagesForUsername, clearRendersForUsername } from "./store.js";
 

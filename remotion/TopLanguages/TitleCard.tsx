@@ -24,6 +24,8 @@ export const topLanguagesTitleCardSchema = z.object({
   rocket: rocketSchema,
   randomizePlanetSeed: z.string(),
   randomizeOctocatSeed: z.number(),
+  // Bitbucket videos leave out GitHub's mascot.
+  hideOctocat: z.boolean().optional(),
 });
 
 export const TITLE_CARD_DURATION = 100;
@@ -35,6 +37,7 @@ export const TopLanguagesTitleCard: React.FC<
   rocket,
   randomizePlanetSeed,
   randomizeOctocatSeed,
+  hideOctocat,
 }) => {
   const frame = useCurrentFrame();
   const { durationInFrames } = useVideoConfig();
@@ -80,14 +83,16 @@ export const TopLanguagesTitleCard: React.FC<
           <TopLanguagesRocket rocket={rocket} />
         </AbsoluteFill>
       </Sequence>
-      <AbsoluteFill
-        style={{
-          transform:
-            random(randomizeOctocatSeed) > 0.5 ? `scaleX(-1)` : undefined,
-        }}
-      >
-        <TitleCardOctocat />
-      </AbsoluteFill>
+      {hideOctocat ? null : (
+        <AbsoluteFill
+          style={{
+            transform:
+              random(randomizeOctocatSeed) > 0.5 ? `scaleX(-1)` : undefined,
+          }}
+        >
+          <TitleCardOctocat />
+        </AbsoluteFill>
+      )}
       <AbsoluteFill
         style={{
           justifyContent: "center",

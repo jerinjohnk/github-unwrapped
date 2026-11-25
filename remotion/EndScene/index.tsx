@@ -9,7 +9,7 @@ import {
 
 import { z } from "zod";
 import type { Planet } from "../../src/config";
-import { PlanetEnum, rocketSchema } from "../../src/config";
+import { PlanetEnum, platformSchema, rocketSchema } from "../../src/config";
 import { PlanetEntrance } from "../Contributions/PlanetEntrance";
 import { FPS } from "../Issues/make-ufo-positions";
 import { prefetchPlanetImage } from "../planets";
@@ -34,6 +34,7 @@ const container: React.CSSProperties = {
 export const endSceneSchema = z.object({
   rocket: rocketSchema,
   planet: PlanetEnum,
+  platform: platformSchema.optional(),
 });
 
 export const END_SCENE_DURATION = 7.5 * FPS;
@@ -48,6 +49,7 @@ export const prefetchLandingAssets = (planet: Planet): string[] => {
 export const EndScene: React.FC<z.infer<typeof endSceneSchema>> = ({
   rocket,
   planet,
+  platform,
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -91,6 +93,7 @@ export const EndScene: React.FC<z.infer<typeof endSceneSchema>> = ({
           enterProgress={enterProgress}
           exitProgress={exitProgress}
           planet={planet}
+          platform={platform}
         />
       </AbsoluteFill>
     </AbsoluteFill>

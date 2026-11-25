@@ -35,6 +35,9 @@ export const starsGivenSchema = z.object({
   totalPullRequests: z.number(),
   login: z.string(),
   sampleStarredRepos: z.array(starredRepoExample),
+  // What the stars stand for, shown in the cockpit (default "repos starred");
+  // Bitbucket videos show pull requests raised, listing the biggest.
+  starsLabel: z.string().optional(),
 });
 
 export const getStarFlyDuration = ({ starsGiven }: { starsGiven: number }) => {
@@ -76,6 +79,7 @@ export const StarsGiven: React.FC<Props> = ({
   sampleStarredRepos,
   timeUntilTabletHides,
   timeUntilTabletHasEntered,
+  starsLabel,
 }) => {
   const frame = useCurrentFrame();
   const shakeFactor = interpolate(
@@ -217,6 +221,7 @@ export const StarsGiven: React.FC<Props> = ({
           totalStarCount={starsGiven}
           durationOfStars={durationOfStars}
           timeUntilTabletHides={timeUntilTabletHides}
+          starsLabel={starsLabel}
         />
       ) : null}
     </AbsoluteFill>

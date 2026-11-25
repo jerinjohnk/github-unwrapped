@@ -147,6 +147,7 @@ export const ContributionsScene: React.FC<{
   periodLabel,
 }) => {
   const f = useCurrentFrame();
+  const frontRocket = FrontRocketSource.useFrontRocketSource(rocket);
   const { fps } = useVideoConfig();
 
   const frame = f / 1.5;
@@ -307,7 +308,7 @@ export const ContributionsScene: React.FC<{
               }}
             >
               <Img
-                src={FrontRocketSource.getFrontRocketSource(rocket)}
+                src={frontRocket}
                 style={{
                   width: 732 / 8,
                   height: 1574 / 8,

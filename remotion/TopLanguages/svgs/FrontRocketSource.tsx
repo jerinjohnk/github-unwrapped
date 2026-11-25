@@ -1,6 +1,7 @@
 import React from "react";
 import { Img, staticFile } from "remotion";
 import type { Rocket } from "../../../src/config";
+import { useCustomRocketImages } from "../../rocket-color";
 
 const ROCKET_SCALE = 0.15;
 export const TL_ROCKET_WIDTH = 690 * ROCKET_SCALE;
@@ -22,14 +23,21 @@ export const getFrontRocketSource = (rocket: Rocket) => {
   throw new Error("Invalid rocket");
 };
 
+/** The front view, recoloured when a custom rocket colour is set. */
+export const useFrontRocketSource = (rocket: Rocket) =>
+  useCustomRocketImages()?.front ?? getFrontRocketSource(rocket);
+
 export const RocketFront = (props: {
   readonly style?: React.CSSProperties;
   readonly rocket: Rocket;
-}) => (
-  <Img
-    src={getFrontRocketSource(props.rocket)}
-    width={TL_ROCKET_WIDTH}
-    height={TL_ROCKET_HEIGHT}
-    {...props}
-  />
-);
+}) => {
+  const src = useFrontRocketSource(props.rocket);
+  return (
+    <Img
+      src={src}
+      width={TL_ROCKET_WIDTH}
+      height={TL_ROCKET_HEIGHT}
+      {...props}
+    />
+  );
+};

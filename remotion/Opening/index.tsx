@@ -38,6 +38,8 @@ const OpeningSceneFull: React.FC<z.infer<typeof openingTitleSchema>> = ({
   login,
   startAngle,
   rocket,
+  platform,
+  avatarUrl,
 }) => {
   const { fps, durationInFrames } = useVideoConfig();
   const frame = useCurrentFrame();
@@ -93,6 +95,8 @@ const OpeningSceneFull: React.FC<z.infer<typeof openingTitleSchema>> = ({
             exitProgress={exitProgress}
             login={login}
             rocket={rocket}
+            platform={platform}
+            avatarUrl={avatarUrl}
           />
         </AbsoluteFill>
         <AbsoluteFill
@@ -120,6 +124,8 @@ export const OpeningScene: React.FC<z.infer<typeof openingTitleSchema>> = ({
   login,
   startAngle,
   rocket,
+  platform,
+  avatarUrl,
 }) => {
   const { width, fps, durationInFrames: actualDuration } = useVideoConfig();
   const frame = useCurrentFrame();
@@ -155,7 +161,13 @@ export const OpeningScene: React.FC<z.infer<typeof openingTitleSchema>> = ({
         transform: `scale(${scale}) translateX(${x}px) translateY(0px)`,
       }}
     >
-      <OpeningSceneFull startAngle={startAngle} login={login} rocket={rocket} />
+      <OpeningSceneFull
+        startAngle={startAngle}
+        login={login}
+        rocket={rocket}
+        platform={platform}
+        avatarUrl={avatarUrl}
+      />
       {isMobileDevice() ? null : (
         <Sequence from={actualDuration - 60}>
           <Audio src={staticFile("first-whoosh.mp3")} volume={0.5} />

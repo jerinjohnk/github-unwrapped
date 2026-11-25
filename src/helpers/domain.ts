@@ -19,6 +19,10 @@ const parseBackendCredentials = () => {
         .or(z.literal("").transform(() => undefined)),
       VITE_HOST: z.string().default("http://localhost:8080"),
       NODE_ENV: z.enum(["development", "production"]).default("development"),
+      // Optional: Bitbucket Cloud credentials for the /studio page (Atlassian
+      // account email + API token with read scopes); the page can supply them too.
+      BITBUCKET_EMAIL: z.string().optional(),
+      BITBUCKET_API_TOKEN: z.string().optional(),
       // Optional: GitHub OAuth app, only needed for "Sign in with GitHub"
       // (includes private contributions in the stats).
       VITE_CLIENT_ID: z.string().optional(),

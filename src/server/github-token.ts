@@ -1,5 +1,5 @@
 import { backendCredentials } from "../helpers/domain.js";
-import { badKeyError } from "./github-errors.js";
+import { badKeyError } from "./api-errors.js";
 
 export const hasEnvGithubToken = () =>
   Boolean(backendCredentials().GITHUB_TOKEN);

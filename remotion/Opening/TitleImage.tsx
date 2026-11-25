@@ -7,7 +7,11 @@ import {
   useVideoConfig,
 } from "remotion";
 import { z } from "zod";
-import { openingSceneStartAngle, rocketSchema } from "../../src/config";
+import {
+  openingSceneStartAngle,
+  platformSchema,
+  rocketSchema,
+} from "../../src/config";
 import type { GradientType } from "../Gradients/available-gradients";
 import { PANE_BORDER } from "../TopLanguages/Pane";
 
@@ -15,6 +19,8 @@ export const openingTitleSchema = z.object({
   login: z.string(),
   startAngle: openingSceneStartAngle,
   rocket: rocketSchema,
+  platform: platformSchema.optional(),
+  avatarUrl: z.string().optional(),
 });
 
 const TITLE_IMAGE_INNER_BORDER_RADIUS = 30;
@@ -24,12 +30,13 @@ export const accentColorToGradient = (): GradientType => {
   return "blueRadial";
 };
 
-export const getAvatarImage = (login: string) => {
-  return `https://github.com/${login}.png`;
+export const getAvatarImage = (login: string, avatarUrl?: string) => {
+  return avatarUrl ?? `https://github.com/${login}.png`;
 };
 
 export const TitleImage: React.FC<z.infer<typeof openingTitleSchema>> = ({
   login,
+  avatarUrl,
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -54,7 +61,7 @@ export const TitleImage: React.FC<z.infer<typeof openingTitleSchema>> = ({
       }}
     >
       <Img
-        src={getAvatarImage(login)}
+        src={getAvatarImage(login, avatarUrl)}
         style={{
           width: 160,
           borderRadius: TITLE_IMAGE_INNER_BORDER_RADIUS,

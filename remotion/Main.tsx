@@ -34,6 +34,7 @@ import {
 import { AllPlanets, getDurationOfAllPlanets } from "./TopLanguages/AllPlanets";
 import { TOP_LANGUAGES_EXIT_DURATION } from "./TopLanguages/PlaneScaleWiggle";
 import { injectFont } from "./font";
+import { RocketColorProvider } from "./rocket-color";
 
 type Schema = z.infer<typeof compositionSchema>;
 
@@ -138,6 +139,9 @@ export const Main: React.FC<Schema> = ({
   totalContributions,
   longestStreak,
   periodLabel,
+  platform,
+  avatarUrl,
+  rocketColor,
 }) => {
   const { durationInFrames } = useVideoConfig();
 
@@ -146,96 +150,103 @@ export const Main: React.FC<Schema> = ({
   }, [durationInFrames, rocket]);
 
   return (
-    <AbsoluteFill
-      style={{
-        backgroundColor: "#060842",
-      }}
-    >
-      <Audio src={soundTrack} />
-      <Series>
-        <Series.Sequence durationInFrames={OPENING_SCENE_LENGTH}>
-          <OpeningScene
-            startAngle={openingSceneStartAngle}
-            login={login}
-            rocket={rocket}
-          />
-        </Series.Sequence>
-        {topLanguages ? (
-          <Series.Sequence
-            durationInFrames={getDurationOfAllPlanets({
-              topLanguages,
-              fps: VIDEO_FPS,
-            })}
-            offset={-OPENING_SCENE_OUT_OVERLAP}
-          >
-            <AllPlanets
-              corner={corner}
-              topLanguages={topLanguages}
-              showHelperLine={showHelperLine}
+    <RocketColorProvider color={rocketColor}>
+      <AbsoluteFill
+        style={{
+          backgroundColor: "#060842",
+        }}
+      >
+        <Audio src={soundTrack} />
+        <Series>
+          <Series.Sequence durationInFrames={OPENING_SCENE_LENGTH}>
+            <OpeningScene
+              startAngle={openingSceneStartAngle}
               login={login}
               rocket={rocket}
-              octocatSeed={random(login)}
+              platform={platform}
+              avatarUrl={avatarUrl}
             />
           </Series.Sequence>
-        ) : null}
-        <Series.Sequence
-          durationInFrames={getIssuesDuration({ issuesClosed, issuesOpened })}
-          offset={
-            topLanguages
-              ? -TOP_LANGUAGES_EXIT_DURATION
-              : -OPENING_SCENE_OUT_OVERLAP
-          }
-        >
-          <Issues
-            rocket={rocket}
-            openIssues={issuesOpened}
-            closedIssues={issuesClosed}
-          />
-        </Series.Sequence>
-        <Series.Sequence
-          durationInFrames={getStarsAndProductivityDuration({ starsGiven })}
-          offset={-ISSUES_EXIT_DURATION}
-        >
-          <StarsAndProductivity
-            starsGiven={starsGiven}
-            showCockpit
-            topWeekday={topWeekday}
-            topHour={topHour}
-            graphData={graphData}
-            totalPullRequests={totalPullRequests}
-            login={login}
-            sampleStarredRepos={sampleStarredRepos}
-          />
-        </Series.Sequence>
-
-        <Series.Sequence
-          durationInFrames={CONTRIBUTIONS_SCENE_DURATION}
-          offset={-CONTRIBUTIONS_SCENE_ENTRANCE_TRANSITION}
-        >
-          <AbsoluteFill style={{ background: "black" }}>
-            <ContributionsScene
-              longestStreak={longestStreak}
-              total={totalContributions}
+          {topLanguages ? (
+            <Series.Sequence
+              durationInFrames={getDurationOfAllPlanets({
+                topLanguages,
+                fps: VIDEO_FPS,
+              })}
+              offset={-OPENING_SCENE_OUT_OVERLAP}
+            >
+              <AllPlanets
+                corner={corner}
+                topLanguages={topLanguages}
+                showHelperLine={showHelperLine}
+                login={login}
+                rocket={rocket}
+                octocatSeed={random(login)}
+                hideOctocat={platform === "bitbucket"}
+              />
+            </Series.Sequence>
+          ) : null}
+          <Series.Sequence
+            durationInFrames={getIssuesDuration({ issuesClosed, issuesOpened })}
+            offset={
+              topLanguages
+                ? -TOP_LANGUAGES_EXIT_DURATION
+                : -OPENING_SCENE_OUT_OVERLAP
+            }
+          >
+            <Issues
               rocket={rocket}
-              contributionData={contributionData}
-              planet={planet}
-              username={login}
-              periodLabel={periodLabel}
+              openIssues={issuesOpened}
+              closedIssues={issuesClosed}
+              platform={platform}
             />
-          </AbsoluteFill>
-        </Series.Sequence>
-        <Series.Sequence
-          durationInFrames={END_SCENE_DURATION}
-          offset={-CONTRIBUTIONS_SCENE_EXIT_TRANSITION}
-        >
-          <EndScene planet={planet} rocket={rocket} />
-        </Series.Sequence>
-      </Series>
-      {isMobileDevice() ? null : (
-        <Sequence from={durationInFrames - 230}>
-          <Audio startFrom={170} src={staticFile("landing.mp3")} />
-        </Sequence>
-      )}
-    </AbsoluteFill>
+          </Series.Sequence>
+          <Series.Sequence
+            durationInFrames={getStarsAndProductivityDuration({ starsGiven })}
+            offset={-ISSUES_EXIT_DURATION}
+          >
+            <StarsAndProductivity
+              starsGiven={starsGiven}
+              showCockpit
+              topWeekday={topWeekday}
+              topHour={topHour}
+              graphData={graphData}
+              totalPullRequests={totalPullRequests}
+              login={login}
+              sampleStarredRepos={sampleStarredRepos}
+              starsLabel={platform === "bitbucket" ? "PRs raised" : undefined}
+            />
+          </Series.Sequence>
+
+          <Series.Sequence
+            durationInFrames={CONTRIBUTIONS_SCENE_DURATION}
+            offset={-CONTRIBUTIONS_SCENE_ENTRANCE_TRANSITION}
+          >
+            <AbsoluteFill style={{ background: "black" }}>
+              <ContributionsScene
+                longestStreak={longestStreak}
+                total={totalContributions}
+                rocket={rocket}
+                contributionData={contributionData}
+                planet={planet}
+                username={login}
+                periodLabel={periodLabel}
+              />
+            </AbsoluteFill>
+          </Series.Sequence>
+          <Series.Sequence
+            durationInFrames={END_SCENE_DURATION}
+            offset={-CONTRIBUTIONS_SCENE_EXIT_TRANSITION}
+          >
+            <EndScene planet={planet} rocket={rocket} platform={platform} />
+          </Series.Sequence>
+        </Series>
+        {isMobileDevice() ? null : (
+          <Sequence from={durationInFrames - 230}>
+            <Audio startFrom={170} src={staticFile("landing.mp3")} />
+          </Sequence>
+        )}
+      </AbsoluteFill>
+    </RocketColorProvider>
   );
 };

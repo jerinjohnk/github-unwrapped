@@ -53,6 +53,20 @@ button:disabled { opacity: .5; cursor: default; }
 .chip[aria-pressed=true] { background: var(--soft); border-color: var(--accent); color: var(--accent); font-weight: 600; }
 .muted { color: var(--muted); }
 .status { margin-top: 10px; min-height: 1.4em; }
+.color-pick { display: inline-flex; gap: 8px; align-items: center; border-radius: 999px; padding: 3px 12px 3px 4px;
+  background: var(--chip); border: 1px solid transparent; cursor: pointer; }
+.color-pick.on { background: var(--soft); border-color: var(--accent); color: var(--accent); font-weight: 600; }
+.color-pick input { width: 28px; height: 28px; border: none; padding: 0; background: none; border-radius: 50%; cursor: pointer; }
+section.fetch-card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px 20px; }
+button.link { border: none; background: none; color: var(--accent); padding: 2px 4px; }
+.biggest { margin: 0; padding-left: 22px; display: grid; gap: 4px; }
+.biggest li { overflow-wrap: anywhere; }
+.biggest .size { color: var(--muted); font-size: 12.5px; font-variant-numeric: tabular-nums; margin-left: 6px; }
+.repo-list { display: grid; gap: 2px; max-height: 340px; overflow: auto; margin-top: 8px; }
+.repo-list label { display: flex; gap: 10px; align-items: center; padding: 6px 8px; border-radius: 8px; cursor: pointer; }
+.repo-list label:hover { background: var(--soft); }
+.repo-list .name { flex: 1; overflow-wrap: anywhere; }
+.repo-list .count { color: var(--muted); font-size: 12.5px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .error { color: var(--warn); background: var(--warn-soft); border-radius: 8px; padding: 8px 12px; }
 .hidden { display: none !important; }
 label.check { display: inline-flex; gap: 6px; align-items: center; color: var(--muted); }
@@ -80,41 +94,58 @@ video { display: block; width: 100%; max-width: 540px; border-radius: 10px; marg
 <body>
 <header>
   <h1>Unwrapped Studio</h1>
-  <p>Make a GitHub year-in-review video for any date range (in IST). Runs on this computer; your key is never saved.</p>
+  <p>Make a GitHub or Bitbucket year-in-review video for any date range (in IST). Runs on this computer; your keys are never saved.</p>
 </header>
 
 <main>
-  <details class="step" id="s-key" open>
-    <summary><span class="n">1</span>GitHub key <span class="meta" id="key-meta"></span><span class="chev" aria-hidden="true">▶</span></summary>
+  <details class="step" id="s-account" open>
+    <summary><span class="n">1</span>Account <span class="meta" id="account-meta"></span><span class="chev" aria-hidden="true">▶</span></summary>
     <div class="body">
-      <p class="hint">A personal access token from
-        <a href="https://github.com/settings/tokens" target="_blank" rel="noopener">github.com/settings/tokens</a>
-        (no scopes needed for public data). It stays in this tab's memory, is sent only to this local server for
-        the GitHub requests, and is not written to disk. <span id="env-hint"></span></p>
-      <div class="row">
-        <input type="password" id="key" class="grow" placeholder="ghp_…" autocomplete="off" spellcheck="false"
-          aria-label="GitHub personal access token">
-        <button type="button" id="key-toggle" aria-pressed="false">Show</button>
-      </div>
-    </div>
-  </details>
+      <div class="chips" id="platforms" role="group" aria-label="Platform"></div>
 
-  <details class="step" id="s-user" open>
-    <summary><span class="n">2</span>GitHub user <span class="meta" id="user-meta"></span><span class="chev" aria-hidden="true">▶</span></summary>
-    <div class="body">
-      <p class="hint">Whose year to unwrap.</p>
-      <input type="text" id="username" class="grow" placeholder="octocat" autocomplete="off" spellcheck="false"
-        aria-label="GitHub username" style="width: min(100%, 360px)">
+      <div id="gh-fields">
+        <p class="hint">A GitHub personal access token from
+          <a href="https://github.com/settings/tokens" target="_blank" rel="noopener">github.com/settings/tokens</a>
+          (no scopes needed for public data). <span id="env-hint"></span></p>
+        <div class="row">
+          <input type="password" id="key" class="grow" placeholder="ghp_…" autocomplete="off" spellcheck="false"
+            aria-label="GitHub personal access token">
+          <button type="button" class="toggle" data-for="key" aria-pressed="false">Show</button>
+        </div>
+        <p class="hint" style="margin: 14px 0 8px">Whose year to unwrap:</p>
+        <input type="text" id="username" placeholder="GitHub username, e.g. octocat" autocomplete="off" spellcheck="false"
+          aria-label="GitHub username" style="width: min(100%, 360px)">
+      </div>
+
+      <div id="bb-fields" class="hidden">
+        <p class="hint">The video is for the account that owns the token, across all its Bitbucket workspaces.
+          Create a token at
+          <a href="https://id.atlassian.com/manage-profile/security/api-tokens" target="_blank" rel="noopener">id.atlassian.com → Security → API tokens</a>:
+          <b>Create API token with scopes</b>, choose <b>Bitbucket</b> and tick the read scopes
+          <span id="bb-scopes"></span>. <span id="bb-env-hint"></span></p>
+        <div class="row" style="margin-bottom: 8px">
+          <input type="text" id="bb-email" class="grow" placeholder="Atlassian account email" autocomplete="off"
+            spellcheck="false" aria-label="Atlassian account email">
+        </div>
+        <div class="row">
+          <input type="password" id="bb-key" class="grow" placeholder="Bitbucket API token" autocomplete="off"
+            spellcheck="false" aria-label="Bitbucket API token">
+          <button type="button" class="toggle" data-for="bb-key" aria-pressed="false">Show</button>
+        </div>
+      </div>
+
+      <p class="hint" style="margin: 12px 0 0">Keys stay in this tab's memory, are sent only to this local server for
+        the API requests, and are not written to disk.</p>
     </div>
   </details>
 
   <details class="step" id="s-range" open>
-    <summary><span class="n">3</span>Date range <span class="meta" id="range-meta"></span><span class="chev" aria-hidden="true">▶</span></summary>
+    <summary><span class="n">2</span>Date range <span class="meta" id="range-meta"></span><span class="chev" aria-hidden="true">▶</span></summary>
     <div class="body">
       <p class="hint">Every number in the video is filtered to this range: contributions, the contribution grid,
-        longest streak, pull requests, issues, stars, commits (top day and hour) and languages.
+        longest streak, pull requests, issues (GitHub), stars (GitHub), commits (top day and hour) and languages.
         Dates and times are in <b>IST</b> (UTC+05:30): a range runs from midnight to midnight IST.
-        GitHub limits a range to one year.</p>
+        A range can be at most one year.</p>
       <div class="chips" id="presets" role="group" aria-label="Date range presets"></div>
       <div class="row">
         <label class="muted" for="from">From</label>
@@ -123,29 +154,61 @@ video { display: block; width: 100%; max-width: 540px; border-radius: 10px; marg
         <input type="date" id="to">
       </div>
       <div class="status" id="range-info"></div>
-      <div class="row" style="margin-top: 6px">
-        <button class="primary" type="button" id="fetch-btn">Fetch stats</button>
-        <label class="check"><input type="checkbox" id="refresh"> Refetch from GitHub (ignore cached stats)</label>
-      </div>
-      <div class="status" id="fetch-status"></div>
     </div>
   </details>
 
+  <details class="step hidden" id="s-repos" open>
+    <summary><span class="n">3</span>Repositories <span class="meta" id="repos-meta"></span><span class="chev" aria-hidden="true">▶</span></summary>
+    <div class="body">
+      <p class="hint">Choose which repositories count. Your commits and languages come from your pull requests;
+        in a repository without pull requests by you, only the pull requests you approved count.
+        Skip this step to use every repository with your pull requests.</p>
+      <div class="row">
+        <button type="button" id="repos-btn">Find my repositories</button>
+        <button type="button" class="link hidden" id="repos-all">Select all</button>
+        <button type="button" class="link hidden" id="repos-mine">Only ones with my PRs</button>
+        <button type="button" class="link hidden" id="repos-none">Clear</button>
+      </div>
+      <div class="status" id="repos-status"></div>
+      <div class="repo-list" id="repo-list"></div>
+    </div>
+  </details>
+
+  <section class="step fetch-card">
+    <div class="row">
+      <button class="primary" type="button" id="fetch-btn">Fetch stats</button>
+      <label class="check"><input type="checkbox" id="refresh"> Refetch (ignore cached stats)</label>
+    </div>
+    <div class="status" id="fetch-status"></div>
+  </section>
+
   <details class="step hidden" id="s-stats" open>
-    <summary><span class="n">4</span>Stats <span class="meta" id="stats-meta"></span><span class="chev" aria-hidden="true">▶</span></summary>
+    <summary><span class="n">3</span>Stats <span class="meta" id="stats-meta"></span><span class="chev" aria-hidden="true">▶</span></summary>
     <div class="body" id="stats-body">
       <div class="stats" id="stats"></div>
       <div class="heat" id="heat" aria-label="Contributions per day in the range"></div>
       <div class="langs" id="langs"></div>
+      <div class="hidden" id="biggest">
+        <p class="hint" style="margin: 16px 0 6px"><b>Biggest pull requests</b> (lines of code changed), shown in the
+          video's cockpit under "PRs raised":</p>
+        <ol class="biggest" id="biggest-list"></ol>
+      </div>
+      <div class="status hidden" id="scan-note"></div>
     </div>
   </details>
 
   <details class="step hidden" id="s-video" open>
-    <summary><span class="n">5</span>Video <span class="meta" id="video-meta"></span><span class="chev" aria-hidden="true">▶</span></summary>
+    <summary><span class="n">4</span>Video <span class="meta" id="video-meta"></span><span class="chev" aria-hidden="true">▶</span></summary>
     <div class="body">
-      <p class="hint">Pick a rocket and generate. The first render prepares the project and takes a few minutes;
+      <p class="hint">Pick a rocket, or any colour with <b>Custom colour</b>, and generate. The first render prepares the project and takes a few minutes;
         later ones take about 1–2 minutes. Videos are cached in <code>.local-data/renders/</code>.</p>
-      <div class="chips" id="themes" role="group" aria-label="Rocket colour"></div>
+      <div class="row" style="margin-bottom: 12px">
+        <div class="chips" id="themes" role="group" aria-label="Rocket colour" style="margin-bottom: 0"></div>
+        <label class="color-pick" title="Pick any colour for the rocket">
+          <input type="color" id="rocket-color" value="#22c55e" aria-label="Custom rocket colour">
+          <span id="rocket-color-label">Custom colour</span>
+        </label>
+      </div>
       <button class="primary" type="button" id="render-btn">Generate video</button>
       <div class="progress hidden" id="progress"><span></span></div>
       <div class="status" id="render-status"></div>
@@ -166,9 +229,14 @@ video { display: block; width: 100%; max-width: 540px; border-radius: 10px; marg
   const WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
   const fmt = (n) => Number(n).toLocaleString();
 
-  // The key lives only in this variable and the input field.
-  let fetched = null; // { username, from, to, stats }
+  // Keys live only in the input fields; nothing is stored.
+  let platform = "github";
+  let fetched = null; // { platform, username, from, to, repoSig, stats }
+  // Bitbucket repository picker: the list found for a range, and what is ticked.
+  let repoChoices = null; // { from, to, email, repos: [{ fullName, pullRequests, updatedOn }] }
+  const selectedRepos = new Set();
   let theme = CFG.themes[0];
+  let rocketColor = null; // "#rrggbb" when a custom colour is chosen
   let rendering = false;
 
   // ---------- Dates (UTC, YYYY-MM-DD) ----------
@@ -193,7 +261,7 @@ video { display: block; width: 100%; max-width: 540px; border-radius: 10px; marg
   const rangeError = (from, to) => {
     if (!parse(from) || !parse(to)) return "Choose a start and an end date.";
     if (from > to) return "The start date must be on or before the end date.";
-    if (to > maxEnd(from)) return `GitHub limits a range to one year: the end date can be ${pretty(maxEnd(from))} at the latest.`;
+    if (to > maxEnd(from)) return `A range can be at most one year: the end date can be ${pretty(maxEnd(from))} at the latest.`;
     return null;
   };
 
@@ -220,35 +288,179 @@ video { display: block; width: 100%; max-width: 540px; border-radius: 10px; marg
 
   // ---------- Themes ----------
   const themeButtons = CFG.themes.map((t) => {
-    const b = addChip($("themes"), t[0].toUpperCase() + t.slice(1) + " rocket", () => { theme = t; resetVideo(); paintThemes(); });
+    const b = addChip($("themes"), t[0].toUpperCase() + t.slice(1) + " rocket", () => {
+      theme = t; rocketColor = null; resetVideo(); paintThemes();
+    });
     return { b, t };
   });
-  const paintThemes = () => themeButtons.forEach(({ b, t }) => b.setAttribute("aria-pressed", String(t === theme)));
+  const paintThemes = () => {
+    themeButtons.forEach(({ b, t }) => b.setAttribute("aria-pressed", String(!rocketColor && t === theme)));
+    $("rocket-color").closest(".color-pick").classList.toggle("on", Boolean(rocketColor));
+    $("rocket-color-label").textContent = rocketColor ? `Custom ${rocketColor}` : "Custom colour";
+  };
+  // Choosing (or re-clicking) the colour swatch selects the custom colour.
+  const chooseColor = () => { rocketColor = $("rocket-color").value.toLowerCase(); resetVideo(); paintThemes(); };
+  $("rocket-color").addEventListener("input", chooseColor);
+  $("rocket-color").addEventListener("click", chooseColor);
   paintThemes();
 
-  // ---------- Key ----------
+  // ---------- Account ----------
+  const PLATFORMS = [["github", "GitHub"], ["bitbucket", "Bitbucket"]];
+  const platformButtons = PLATFORMS.map(([id, name]) => {
+    const b = addChip($("platforms"), name, () => { platform = id; resetVideo(); update(); });
+    return { b, id };
+  });
+
   $("env-hint").textContent = CFG.hasEnvKey
     ? "Leave it empty to use GITHUB_TOKEN from .env."
     : "No GITHUB_TOKEN is set in .env, so a key is required.";
-  $("key-toggle").addEventListener("click", () => {
-    const show = $("key").type === "password";
-    $("key").type = show ? "text" : "password";
-    $("key-toggle").textContent = show ? "Hide" : "Show";
-    $("key-toggle").setAttribute("aria-pressed", String(show));
-  });
+  $("bb-scopes").textContent = CFG.bitbucketScopes.join(", ");
+  $("bb-env-hint").textContent = CFG.hasEnvBitbucket
+    ? "Leave both empty to use BITBUCKET_EMAIL and BITBUCKET_API_TOKEN from .env."
+    : "";
+  for (const t of document.querySelectorAll("button.toggle")) {
+    t.addEventListener("click", () => {
+      const input = $(t.dataset.for);
+      const show = input.type === "password";
+      input.type = show ? "text" : "password";
+      t.textContent = show ? "Hide" : "Show";
+      t.setAttribute("aria-pressed", String(show));
+    });
+  }
 
   // ---------- State ----------
-  const current = () => ({ username: $("username").value.trim(), from: $("from").value, to: $("to").value });
+  // The chosen repositories, or null for "all with my pull requests" (also when
+  // exactly those are ticked, so the same cached stats are reused).
+  const chosenRepos = () => {
+    if (platform !== "bitbucket" || !repoChoices) return null;
+    const withMyPrs = repoChoices.repos.filter((r) => r.pullRequests > 0).map((r) => r.fullName);
+    const same = withMyPrs.length === selectedRepos.size && withMyPrs.every((r) => selectedRepos.has(r));
+    return same ? null : [...selectedRepos].sort();
+  };
+  const repoSignature = () => JSON.stringify(chosenRepos());
+
+  const current = () => ({
+    platform,
+    username: platform === "github" ? $("username").value.trim() : "",
+    from: $("from").value,
+    to: $("to").value,
+  });
   const isStale = () => {
     const c = current();
-    return !fetched || fetched.username.toLowerCase() !== c.username.toLowerCase() || fetched.from !== c.from || fetched.to !== c.to;
+    return !fetched || fetched.platform !== c.platform ||
+      (c.platform === "github" && fetched.username.toLowerCase() !== c.username.toLowerCase()) ||
+      fetched.from !== c.from || fetched.to !== c.to ||
+      (c.platform === "bitbucket" && fetched.repoSig !== repoSignature());
   };
+
+  // Why "Fetch stats" can't run yet, or null.
+  const accountProblem = () => {
+    if (platform === "github") {
+      if (!$("key").value.trim() && !CFG.hasEnvKey) return "Enter a GitHub key.";
+      if (!$("username").value.trim()) return "Enter a GitHub username.";
+      return null;
+    }
+    const email = $("bb-email").value.trim();
+    const key = $("bb-key").value.trim();
+    if (!email && !key) return CFG.hasEnvBitbucket ? null : "Enter your Atlassian email and a Bitbucket API token.";
+    if (!email || !key) return "Enter both the Atlassian email and the API token.";
+    return null;
+  };
+
+  // ---------- Bitbucket repositories ----------
+  function renderRepos() {
+    const list = $("repo-list");
+    list.innerHTML = "";
+    const loaded = Boolean(repoChoices);
+    for (const id of ["repos-all", "repos-mine", "repos-none"]) $(id).classList.toggle("hidden", !loaded);
+    if (!loaded) return;
+    for (const repo of repoChoices.repos) {
+      const label = document.createElement("label");
+      const box = document.createElement("input");
+      box.type = "checkbox";
+      box.checked = selectedRepos.has(repo.fullName);
+      box.addEventListener("change", () => {
+        if (box.checked) selectedRepos.add(repo.fullName); else selectedRepos.delete(repo.fullName);
+        update();
+      });
+      const name = document.createElement("span");
+      name.className = "name";
+      name.textContent = repo.fullName;
+      const count = document.createElement("span");
+      count.className = "count";
+      count.textContent = repo.pullRequests > 0
+        ? `${fmt(repo.pullRequests)} PR${repo.pullRequests === 1 ? "" : "s"} by you`
+        : "approvals only";
+      label.append(box, name, count);
+      list.appendChild(label);
+    }
+  }
+
+  const selectRepos = (predicate) => {
+    selectedRepos.clear();
+    for (const r of repoChoices.repos) if (predicate(r)) selectedRepos.add(r.fullName);
+    renderRepos();
+    update();
+  };
+  $("repos-all").addEventListener("click", () => selectRepos(() => true));
+  $("repos-mine").addEventListener("click", () => selectRepos((r) => r.pullRequests > 0));
+  $("repos-none").addEventListener("click", () => selectRepos(() => false));
+
+  $("repos-btn").addEventListener("click", async () => {
+    const { from, to } = current();
+    const email = $("bb-email").value.trim();
+    $("repos-btn").disabled = true;
+    setStatus($("repos-status"), "Finding repositories with your activity in the range…", "busy");
+    try {
+      const res = await api("/api/studio/bitbucket/repos", {
+        email: email || undefined, key: $("bb-key").value.trim() || undefined, from, to,
+      });
+      repoChoices = { from, to, email, repos: res.repos };
+      selectedRepos.clear();
+      for (const r of res.repos) if (r.pullRequests > 0) selectedRepos.add(r.fullName);
+      setStatus($("repos-status"), res.repos.length
+        ? `${fmt(res.repos.length)} repositories updated in the range. Ticked: the ones with your pull requests.`
+        : "No repositories with activity in this range.", "muted");
+      renderRepos();
+    } catch (err) {
+      setStatus($("repos-status"), err.message, "error");
+    } finally {
+      $("repos-btn").disabled = false;
+      update();
+    }
+  });
+
+  const STEPS = ["s-account", "s-range", "s-repos", "s-stats", "s-video"];
 
   function update() {
     const { username, from, to } = current();
-    const key = $("key").value.trim();
-    $("key-meta").textContent = key ? "· key entered" : CFG.hasEnvKey ? "· using .env" : "· required";
-    $("user-meta").textContent = username ? "· @" + username : "";
+
+    // A repository list belongs to one range and account.
+    if (repoChoices && (repoChoices.from !== from || repoChoices.to !== to ||
+        repoChoices.email !== $("bb-email").value.trim())) {
+      repoChoices = null;
+      selectedRepos.clear();
+      renderRepos();
+      setStatus($("repos-status"), "The range or account changed: find repositories again, or skip to use all with your pull requests.", "muted");
+    }
+    $("s-repos").classList.toggle("hidden", platform !== "bitbucket");
+    $("repos-meta").textContent = repoChoices
+      ? `· ${fmt(selectedRepos.size)} of ${fmt(repoChoices.repos.length)} chosen`
+      : "· all with your pull requests";
+    let n = 0;
+    for (const id of STEPS) {
+      if (!$(id).classList.contains("hidden")) $(id).querySelector("summary .n").textContent = String(++n);
+    }
+    for (const { b, id } of platformButtons) b.setAttribute("aria-pressed", String(id === platform));
+    $("gh-fields").classList.toggle("hidden", platform !== "github");
+    $("bb-fields").classList.toggle("hidden", platform !== "bitbucket");
+    if (platform === "github") {
+      const key = $("key").value.trim();
+      $("account-meta").textContent = `· GitHub${username ? ", @" + username : ""}${key ? "" : CFG.hasEnvKey ? " (key from .env)" : ""}`;
+    } else {
+      const entered = $("bb-email").value.trim() || $("bb-key").value.trim();
+      $("account-meta").textContent = `· Bitbucket, key owner${entered ? "" : CFG.hasEnvBitbucket ? " (from .env)" : ""}`;
+    }
 
     let matched = false;
     for (const { b, p } of presetButtons) {
@@ -270,8 +482,10 @@ video { display: block; width: 100%; max-width: 540px; border-radius: 10px; marg
       $("range-meta").textContent = `· ${pretty(from)} – ${pretty(to)}`;
     }
 
-    const keyMissing = !key && !CFG.hasEnvKey;
-    $("fetch-btn").disabled = Boolean(err) || !username || keyMissing;
+    const problem = accountProblem() ||
+      (platform === "bitbucket" && repoChoices && selectedRepos.size === 0 ? "Choose at least one repository." : null);
+    $("fetch-btn").disabled = Boolean(err) || Boolean(problem);
+    $("fetch-btn").title = problem || "";
 
     const stale = isStale();
     $("stats-body").classList.toggle("stale", stale && Boolean(fetched));
@@ -279,7 +493,7 @@ video { display: block; width: 100%; max-width: 540px; border-radius: 10px; marg
     $("render-btn").disabled = stale || rendering;
   }
 
-  for (const id of ["key", "username", "from", "to"]) $(id).addEventListener("input", update);
+  for (const id of ["key", "username", "bb-email", "bb-key", "from", "to"]) $(id).addEventListener("input", update);
 
   // ---------- API ----------
   async function api(path, body) {
@@ -306,15 +520,23 @@ video { display: block; width: 100%; max-width: 540px; border-radius: 10px; marg
   // ---------- Fetch stats ----------
   $("fetch-btn").addEventListener("click", async () => {
     const { username, from, to } = current();
-    const key = $("key").value.trim();
+    const refresh = $("refresh").checked;
+    const body = platform === "github"
+      ? { platform, key: $("key").value.trim() || undefined, username, from, to, refresh }
+      : { platform, email: $("bb-email").value.trim() || undefined, key: $("bb-key").value.trim() || undefined, from, to, refresh, repos: chosenRepos() || undefined };
+    const repoSig = repoSignature();
     $("fetch-btn").disabled = true;
-    setStatus($("fetch-status"), "Fetching stats from GitHub… (up to a minute for busy accounts)", "busy");
+    setStatus($("fetch-status"), platform === "github"
+      ? "Fetching stats from GitHub… (up to a minute for busy accounts)"
+      : "Reading your pull requests from Bitbucket… (about a minute for a busy year; cached afterwards)", "busy");
     try {
-      const stats = await api("/api/studio/stats", { key: key || undefined, username, from, to, refresh: $("refresh").checked });
-      fetched = { username, from, to, stats };
+      const stats = await api("/api/studio/stats", body);
+      fetched = { platform, username: stats.username, from, to, repoSig, stats };
       $("refresh").checked = false;
       const at = new Date(stats.fetchedAt).toLocaleString(undefined, { timeZone: CFG.timeZone.iana, dateStyle: "medium", timeStyle: "short" });
-      setStatus($("fetch-status"), `Fetched ${at} ${CFG.timeZone.label}.`, "muted");
+      setStatus($("fetch-status"), stats.cached
+        ? `Loaded from the local cache (fetched ${at} ${CFG.timeZone.label}). Tick “Refetch” to get fresh numbers.`
+        : `Fetched ${at} ${CFG.timeZone.label}.`, "muted");
       showStats(stats);
       resetVideo();
     } catch (err) {
@@ -327,17 +549,35 @@ video { display: block; width: 100%; max-width: 540px; border-radius: 10px; marg
   function showStats(s) {
     $("s-stats").classList.remove("hidden");
     $("s-video").classList.remove("hidden");
-    const items = [
-      [fmt(s.totalContributions), "Contributions"],
-      [fmt(s.longestStreak) + " d", "Longest streak"],
-      [`${fmt(s.activeDays)} / ${fmt(s.days)}`, "Active days"],
-      [fmt(s.totalPullRequests), "Pull requests opened"],
-      [fmt(s.openIssues), "Issues opened, still open"],
-      [fmt(s.closedIssues), "Issues opened, now closed"],
-      [fmt(s.totalStars), "Repositories starred"],
-      [WEEKDAYS[Number(s.topWeekday)] || "–", `Most productive day (${CFG.timeZone.label})`],
-      [String(s.topHour).padStart(2, "0") + ":00", `Most productive hour (${CFG.timeZone.label})`],
+    const tz = CFG.timeZone.label;
+    const productive = [
+      [WEEKDAYS[Number(s.topWeekday)] || "–", `Most productive day (${tz})`],
+      [String(s.topHour).padStart(2, "0") + ":00", `Most productive hour (${tz})`],
     ];
+    const bb = s.bitbucket;
+    const items = s.platform === "bitbucket" && bb
+      ? [
+          [fmt(s.totalContributions), "Contributions"],
+          [fmt(s.longestStreak) + " d", "Longest streak"],
+          [`${fmt(s.activeDays)} / ${fmt(s.days)}`, "Active days"],
+          [fmt(bb.commits), "Your commits (in your PRs)"],
+          [fmt(bb.pullRequests.open + bb.pullRequests.merged + bb.pullRequests.declined), "Pull requests opened"],
+          [fmt(bb.pullRequests.merged), "Merged"],
+          [fmt(bb.pullRequests.open), "Still open"],
+          [fmt(bb.pullRequests.declined), "Declined or superseded"],
+          [fmt(bb.approvals), "PRs you approved"],
+          ...productive,
+        ]
+      : [
+          [fmt(s.totalContributions), "Contributions"],
+          [fmt(s.longestStreak) + " d", "Longest streak"],
+          [`${fmt(s.activeDays)} / ${fmt(s.days)}`, "Active days"],
+          [fmt(s.totalPullRequests), "Pull requests opened"],
+          [fmt(s.openIssues), "Issues opened, still open"],
+          [fmt(s.closedIssues), "Issues opened, now closed"],
+          [fmt(s.totalStars), "Repositories starred"],
+          ...productive,
+        ];
     const box = $("stats");
     box.innerHTML = "";
     for (const [value, name] of items) {
@@ -361,6 +601,32 @@ video { display: block; width: 100%; max-width: 540px; border-radius: 10px; marg
       e.title = `${toIso(day)}: ${c} contribution${c === 1 ? "" : "s"}`;
       heat.appendChild(e);
     });
+
+    const biggestBox = $("biggest");
+    const biggestList = $("biggest-list");
+    biggestList.innerHTML = "";
+    const biggest = (bb && bb.biggestPullRequests) || [];
+    biggestBox.classList.toggle("hidden", !(s.platform === "bitbucket" && biggest.length));
+    for (const pr of biggest) {
+      const li = document.createElement("li");
+      li.textContent = pr.title;
+      const size = document.createElement("span");
+      size.className = "size";
+      size.textContent = `+${fmt(pr.added)} −${fmt(pr.removed)} · ${pr.repo.split("/")[1]} #${pr.id}`;
+      li.appendChild(size);
+      biggestList.appendChild(li);
+    }
+
+    const note = $("scan-note");
+    if (s.platform === "bitbucket" && bb) {
+      note.classList.remove("hidden");
+      note.className = bb.complete ? "status muted" : "status error";
+      note.textContent = `From your pull requests in ${fmt(bb.repositories)} repositor${bb.repositories === 1 ? "y" : "ies"} (${fmt(bb.workspaces)} workspace${bb.workspaces === 1 ? "" : "s"}, ${fmt(bb.requests)} API requests). ` +
+        "Contributions = your commits + PRs opened + PRs approved, per day in IST. Languages and PR sizes come from the code files your PRs changed." +
+        (bb.complete ? "" : ` Some data was not read, so a few numbers may be low: ${(bb.gaps || []).join("; ")}.`);
+    } else {
+      note.classList.add("hidden");
+    }
 
     const langs = $("langs");
     langs.innerHTML = "";
@@ -387,7 +653,7 @@ video { display: block; width: 100%; max-width: 540px; border-radius: 10px; marg
 
   $("render-btn").addEventListener("click", async () => {
     if (!fetched || isStale()) return;
-    const body = { username: fetched.stats.username, from: fetched.from, to: fetched.to, theme };
+    const body = { platform: fetched.platform, username: fetched.stats.username, from: fetched.from, to: fetched.to, theme, rocketColor: rocketColor || undefined, variant: fetched.stats.variant || undefined };
     rendering = true;
     update();
     resetVideo();
@@ -401,9 +667,9 @@ video { display: block; width: 100%; max-width: 540px; border-radius: 10px; marg
           $("video").src = res.url;
           $("video").classList.remove("hidden");
           $("download").href = res.url;
-          $("download").setAttribute("download", `unwrapped-${body.username}-${body.from}_${body.to}.mp4`);
+          $("download").setAttribute("download", `${body.platform}-unwrapped-${body.username}-${body.from}_${body.to}.mp4`);
           $("video-links").classList.remove("hidden");
-          $("video-meta").textContent = `· ${body.theme} rocket, ready`;
+          $("video-meta").textContent = `· ${body.rocketColor ? body.rocketColor : body.theme} rocket, ready`;
           setStatus($("render-status"), "Done.", "muted");
           break;
         }

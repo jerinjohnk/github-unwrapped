@@ -7,6 +7,7 @@ import {
   useVideoConfig,
 } from "remotion";
 import type { z } from "zod";
+import { brandName } from "../brand";
 import { PaneEffect } from "../PaneEffect";
 import { PANE_BACKGROUND, PANE_TEXT_COLOR } from "../TopLanguages/Pane";
 import { TitleImage, type openingTitleSchema } from "./TitleImage";
@@ -29,7 +30,7 @@ export const OpeningTitle: React.FC<
   z.infer<typeof openingTitleSchema> & {
     readonly exitProgress: number;
   }
-> = ({ login, exitProgress, startAngle, rocket }) => {
+> = ({ login, exitProgress, startAngle, rocket, platform, avatarUrl }) => {
   const { fps, height } = useVideoConfig();
   const frame = useCurrentFrame();
 
@@ -111,10 +112,15 @@ export const OpeningTitle: React.FC<
             borderRadius: INNER_BORDER_RADIUS + PADDING,
           }}
         >
-          <TitleImage startAngle={startAngle} login={login} rocket={rocket} />
+          <TitleImage
+            startAngle={startAngle}
+            login={login}
+            rocket={rocket}
+            avatarUrl={avatarUrl}
+          />
           <div>
             <div>
-              This is my <strong>GitHubUnwrapped</strong>
+              This is my <strong>{brandName(platform)}</strong>
             </div>
             <div style={title}>{login}</div>
           </div>

@@ -11,7 +11,7 @@ import {
   useVideoConfig,
 } from "remotion";
 import { z } from "zod";
-import { rocketSchema } from "../../src/config";
+import { platformSchema, rocketSchema } from "../../src/config";
 import { VIDEO_FPS } from "../../types/constants";
 import { Gradient } from "../Gradients/NativeGradient";
 import { Noise } from "../Noise";
@@ -51,6 +51,8 @@ export const issuesSchema = z.object({
   openIssues: z.number().min(0),
   closedIssues: z.number().min(0),
   rocket: rocketSchema,
+  // Bitbucket has no issues: the scene shows pull requests opened and merged.
+  platform: platformSchema.optional(),
 });
 
 export const ISSUES_EXIT_DURATION = 20;
@@ -90,7 +92,9 @@ export const Issues: React.FC<z.infer<typeof issuesSchema>> = ({
   closedIssues,
   openIssues,
   rocket,
+  platform,
 }) => {
+  const showsPullRequests = platform === "bitbucket";
   const frame = useCurrentFrame();
   const { durationInFrames } = useVideoConfig();
   const totalIssues = openIssues + closedIssues;
@@ -235,7 +239,11 @@ export const Issues: React.FC<z.infer<typeof issuesSchema>> = ({
             </Sequence>
           );
         })}
-        {totalIssues === 0 ? <ZeroIssues /> : false}
+        {totalIssues === 0 ? (
+          <ZeroIssues showsPullRequests={showsPullRequests} />
+        ) : (
+          false
+        )}
         {ufos.map((p, i) => {
           const explosion = explosions.find((e) => e.index === i);
           return (
@@ -301,7 +309,9 @@ export const Issues: React.FC<z.infer<typeof issuesSchema>> = ({
             <IssueGridLeft />
             <IssueNumber
               align="left"
-              label="Opened issues"
+              label={
+                showsPullRequests ? "Opened pull requests" : "Opened issues"
+              }
               currentNumber={Math.round(currentNumber)}
               max={totalIssues}
             />
@@ -310,7 +320,9 @@ export const Issues: React.FC<z.infer<typeof issuesSchema>> = ({
             <IssueGridRight />
             <IssueNumber
               align="right"
-              label="Closed issues"
+              label={
+                showsPullRequests ? "Merged pull requests" : "Closed issues"
+              }
               currentNumber={Math.min(
                 closedIssues,
                 Math.round(closedIssuesSoFar.length * (1 / factor)),

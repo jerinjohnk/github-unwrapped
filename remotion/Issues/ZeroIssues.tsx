@@ -61,7 +61,9 @@ const UfoPosition: React.FC<{
   );
 };
 
-export const ZeroIssues: React.FC = () => {
+export const ZeroIssues: React.FC<{
+  readonly showsPullRequests?: boolean;
+}> = ({ showsPullRequests }) => {
   const frame = useCurrentFrame();
 
   const opacity = interpolate(
@@ -93,7 +95,9 @@ export const ZeroIssues: React.FC = () => {
           opacity,
         }}
       >
-        I take no issue with that.
+        {showsPullRequests
+          ? "No pull requests this time."
+          : "I take no issue with that."}
       </div>
       {isMobileDevice() ? null : (
         <Sequence from={90 - 5}>

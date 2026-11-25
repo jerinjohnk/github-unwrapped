@@ -13,11 +13,18 @@ export const Cockpit: React.FC<{
   readonly totalStarCount: number;
   readonly repoText: RepoText | null;
   readonly durationOfStarsWithShake: number;
-}> = ({ durationOfStarsWithShake, repoText, starCount, totalStarCount }) => {
+  readonly starsLabel?: string;
+}> = ({
+  durationOfStarsWithShake,
+  repoText,
+  starCount,
+  totalStarCount,
+  starsLabel,
+}) => {
   return (
     <AbsoluteFill>
       <Sequence durationInFrames={durationOfStarsWithShake}>
-        <HeadsUpDisplay textToDisplay={repoText} />
+        <HeadsUpDisplay textToDisplay={repoText} defaultLabel={starsLabel} />
       </Sequence>
       <CockpitImage />
       <CockpitLeftScreen>

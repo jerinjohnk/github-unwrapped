@@ -108,6 +108,44 @@ export const starredRepoExample = z.object({
   name: z.string(),
 });
 
+export const platformValues = ["github", "bitbucket"] as const;
+export const platformSchema = z.enum(platformValues);
+export type Platform = z.infer<typeof platformSchema>;
+
+/** Extra numbers only Bitbucket stats have, shown on the studio page. */
+// Bump when the way Bitbucket stats are computed changes, so older cached
+// stats are fetched again.
+export const BITBUCKET_STATS_VERSION = 6;
+
+export type BitbucketSummary = {
+  version: number;
+  workspaces: number;
+  // Repositories the user opened pull requests in.
+  repositories: number;
+  // The user's own commits in those pull requests (no merge commits).
+  commits: number;
+  // Rebased or cherry-picked copies of those commits, counted once.
+  copiesSkipped?: number;
+  // Pull requests by others the user approved.
+  approvals: number;
+  // The user's biggest pull requests by lines of code changed (the video's
+  // cockpit shows them).
+  biggestPullRequests?: {
+    id: number;
+    repo: string;
+    title: string;
+    added: number;
+    removed: number;
+  }[];
+  pullRequests: { open: number; merged: number; declined: number };
+  // Bitbucket API requests the fetch used.
+  requests: number;
+  // False if page limits or the request budget cut some lists short;
+  // `gaps` says which (at most 5).
+  complete: boolean;
+  gaps?: string[];
+};
+
 export const compositionSchema = z.object({
   topLanguages: topLanguagesSchema.or(z.null()),
   corner: cornerType,
@@ -129,6 +167,15 @@ export const compositionSchema = z.object({
   sampleStarredRepos: z.array(starredRepoExample),
   // Shown where the video names the period, e.g. "2026" or "2025–26".
   periodLabel: z.string().optional(),
+  // Where the stats come from; changes the branding and a few scenes.
+  platform: platformSchema.optional(),
+  // Profile picture; defaults to https://github.com/<login>.png.
+  avatarUrl: z.string().optional(),
+  // Custom rocket colour ("#rrggbb"); `rocket` then picks the flame and music.
+  rocketColor: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/)
+    .optional(),
 });
 
 // `from`/`to` (YYYY-MM-DD, inclusive) pick the review period; omitted means
@@ -141,6 +188,17 @@ const optionalRange = {
 export const RenderRequest = z.object({
   username: z.string(),
   theme: rocketSchema,
+  platform: platformSchema.optional().default("github"),
+  // Custom rocket colour ("#rrggbb"); overrides `theme` for the rocket art.
+  rocketColor: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/)
+    .optional(),
+  // Bitbucket stats limited to chosen repositories (see the studio page).
+  variant: z
+    .string()
+    .regex(/^[a-f0-9]{8}$/)
+    .optional(),
   ...optionalRange,
 });
 
@@ -182,6 +240,10 @@ export const generateRandomCorner = ({
 };
 
 export type ProfileStats = {
+  // Missing on stats cached before Bitbucket support: means GitHub.
+  platform?: Platform;
+  avatarUrl?: string;
+  bitbucket?: BitbucketSummary;
   // The inclusive date range every number below was filtered to.
   range: { from: string; to: string };
   periodLabel: string;
@@ -259,6 +321,7 @@ export const parseTopLanguage = (topLanguage: {
 export const computeCompositionParameters = (
   userStats: ProfileStats,
   rocketPreference: Rocket | null,
+  rocketColor?: string,
 ): CompositionParameters => {
   const defaultRocket =
     rocketValues[
@@ -305,6 +368,9 @@ export const computeCompositionParameters = (
     sampleStarredRepos: userStats.sampleStarredRepos,
     longestStreak: userStats.longestStreak,
     periodLabel: userStats.periodLabel,
+    platform: userStats.platform ?? "github",
+    avatarUrl: userStats.avatarUrl,
+    rocketColor,
   };
 };
 

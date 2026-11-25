@@ -6,6 +6,7 @@
 //   og/<username>/<range>.jpg                social preview images
 //   ig/<username>/<range>.jpg                Instagram story images
 
+import { createHash } from "node:crypto";
 import {
   existsSync,
   mkdirSync,
@@ -16,7 +17,7 @@ import {
 import { writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import path from "path";
-import type { ProfileStats } from "../config.js";
+import type { Platform, ProfileStats } from "../config.js";
 import type { DateRange } from "../helpers/date-range.js";
 import { rangeKey } from "../helpers/date-range.js";
 
@@ -117,7 +118,10 @@ export const getNumberOfRenders = () => {
   ).length;
 };
 
-/** Removes the videos and images of one user and range (stats are overwritten on refetch). */
+/**
+ * Removes the videos (preset and custom rocket colours) and images of one user
+ * and range; stats are overwritten on refetch.
+ */
 export const clearRange = (
   username: string,
   range: DateRange,
@@ -127,6 +131,41 @@ export const clearRange = (
     rmSync(renderFile(username, theme, range), { force: true });
   }
 
+  const userRenders = path.join(rendersDir, safeName(username));
+  if (existsSync(userRenders)) {
+    for (const file of readdirSync(userRenders)) {
+      if (
+        file.startsWith("color-") &&
+        file.endsWith(`_${rangeKey(range)}.mp4`)
+      ) {
+        rmSync(path.join(userRenders, file), { force: true });
+      }
+    }
+  }
+
   rmSync(ogImageFile(username, range), { force: true });
   rmSync(igStoryFile(username, range), { force: true });
 };
+
+/**
+ * The name a user's files are stored under. Bitbucket users get a prefix so they
+ * can't collide with a GitHub user of the same name (GitHub names can't contain
+ * "--"), and a `variant` when the stats are limited to chosen repositories.
+ */
+export const storeOwner = (
+  platform: Platform,
+  username: string,
+  variant?: string,
+) => {
+  const base = platform === "bitbucket" ? `bitbucket--${username}` : username;
+  return variant ? `${base}--${variant}` : base;
+};
+
+/** Short, stable id for a set of chosen repositories. */
+export const repoSelectionVariant = (repos: string[] | undefined) =>
+  repos
+    ? createHash("sha1")
+        .update([...repos].sort().join("\n"))
+        .digest("hex")
+        .slice(0, 8)
+    : undefined;

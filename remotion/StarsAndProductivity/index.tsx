@@ -54,6 +54,7 @@ export const StarsAndProductivity: React.FC<
   totalPullRequests,
   login,
   sampleStarredRepos,
+  starsLabel,
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -115,6 +116,7 @@ export const StarsAndProductivity: React.FC<
           totalPullRequests={totalPullRequests}
           login={login}
           sampleStarredRepos={sampleStarredRepos}
+          starsLabel={starsLabel}
           timeUntilTabletHides={timeUntilTabletHides}
           timeUntilTabletHasEntered={timeUntilTabletIsEntered}
         />

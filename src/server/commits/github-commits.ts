@@ -1,6 +1,6 @@
 import type { DateRange } from "../../helpers/date-range.js";
 import { searchDateRange } from "../../helpers/date-range.js";
-import { badKeyError, rateLimitError } from "../github-errors.js";
+import { badKeyError, rateLimitError } from "../api-errors.js";
 import type { Commit, commits } from "./commits.js";
 import { mapApiResponseToCommits } from "./map-api-response-to-commits.js";
 

@@ -1,8 +1,9 @@
-// The /studio page: a Commitscape-style form to enter a GitHub key, a user and a
-// date range, preview the filtered stats and render the video.
+// The /studio page: a Commitscape-style form to pick GitHub or Bitbucket, enter a
+// key (and a GitHub user), choose a date range, preview the filtered stats and
+// render the video.
 //
-// The key is only kept in the page's memory and sent with each stats request; the
-// server uses it for that request's GitHub calls and never stores or logs it.
+// Keys are only kept in the page's memory and sent with each stats request; the
+// server uses them for that request's API calls and never stores or logs them.
 // Every /api/studio call must carry the random per-process session token embedded
 // in the page and a localhost Host header, so other websites open in the same
 // browser can't drive these endpoints.
@@ -12,18 +13,24 @@ import { randomBytes, timingSafeEqual } from "node:crypto";
 import { readFileSync } from "node:fs";
 import path from "path";
 import { z } from "zod";
-import { rocketSchema, rocketValues } from "../config.js";
+import type { ProfileStats } from "../config.js";
+import { platformSchema, rocketSchema, rocketValues } from "../config.js";
 import { dateRangeSchema, rangePresets, today } from "../helpers/date-range.js";
+import { backendCredentials } from "../helpers/domain.js";
 import { TIME_ZONE_IANA, TIME_ZONE_LABEL } from "../helpers/timezone.js";
+import { UserFacingError } from "./api-errors.js";
+import { getBitbucketStatsOrCache } from "./bitbucket/cache.js";
+import type { BitbucketAuth } from "./bitbucket/client.js";
+import { REQUIRED_SCOPES } from "./bitbucket/client.js";
+import { getBitbucketRepoChoices } from "./bitbucket/repos.js";
 import { getStatsFromGitHubOrCache } from "./get-stats-from-github-or-cache.js";
-import { GitHubError } from "./github-errors.js";
 import {
   getGithubToken,
   hasEnvGithubToken,
   verifyGithubToken,
 } from "./github-token.js";
 import { renderOrGetProgress } from "./render.js";
-import { clearRange, rootDir } from "./store.js";
+import { clearRange, rootDir, storeOwner } from "./store.js";
 
 const PAGE = path.join(rootDir, "studio", "index.html");
 const SESSION_TOKEN = randomBytes(24).toString("hex");
@@ -34,20 +41,57 @@ const usernameSchema = z
   .trim()
   .regex(/^[A-Za-z0-9-]{1,39}$/, "Enter a valid GitHub username.");
 
+// "workspace/repo-slug"
+const repoNameSchema = z
+  .string()
+  .regex(
+    /^(?=[^/]*[A-Za-z0-9])[\w.-]+\/(?=[^/]*[A-Za-z0-9])[\w.-]+$/,
+    "Invalid repository name.",
+  );
+
 const rangeFields = z
   .object({ from: z.string(), to: z.string() })
   .pipe(dateRangeSchema);
 
 const StudioStatsRequest = z
-  .object({
-    key: z.string().optional(),
-    username: usernameSchema,
-    refresh: z.boolean().optional().default(false),
-  })
+  .discriminatedUnion("platform", [
+    z.object({
+      platform: z.literal("github"),
+      key: z.string().optional(),
+      username: usernameSchema,
+      refresh: z.boolean().optional().default(false),
+    }),
+    z.object({
+      // Bitbucket: the year in review of the API token's owner.
+      platform: z.literal("bitbucket"),
+      email: z.string().optional(),
+      key: z.string().optional(),
+      refresh: z.boolean().optional().default(false),
+      // Chosen repositories; all with the user's pull requests when omitted.
+      repos: z.array(repoNameSchema).min(1).max(200).optional(),
+    }),
+  ])
+  .and(rangeFields);
+
+const StudioReposRequest = z
+  .object({ email: z.string().optional(), key: z.string().optional() })
   .and(rangeFields);
 
 const StudioRenderRequest = z
-  .object({ username: usernameSchema, theme: rocketSchema })
+  .object({
+    platform: platformSchema,
+    // Bitbucket nicknames may contain characters GitHub logins can't.
+    username: z.string().trim().min(1).max(100),
+    theme: rocketSchema,
+    rocketColor: z
+      .string()
+      .regex(/^#[0-9a-fA-F]{6}$/, "Choose a colour like #ff8800.")
+      .optional(),
+    variant: z
+      .string()
+      .regex(/^[a-f0-9]{8}$/)
+      .optional(),
+  })
   .and(rangeFields);
 
 class StudioError extends Error {
@@ -113,6 +157,11 @@ export const studioPage = (_req: Request, res: Response) => {
     today: todayDate,
     timeZone: { label: TIME_ZONE_LABEL, iana: TIME_ZONE_IANA },
     hasEnvKey: hasEnvGithubToken(),
+    hasEnvBitbucket: Boolean(
+      backendCredentials().BITBUCKET_EMAIL &&
+      backendCredentials().BITBUCKET_API_TOKEN,
+    ),
+    bitbucketScopes: REQUIRED_SCOPES,
     themes: rocketValues,
     ...rangePresets(todayDate),
   };
@@ -131,17 +180,41 @@ const handle =
       res.json(await fn(req.body));
     } catch (err) {
       const status =
-        err instanceof StudioError || err instanceof GitHubError
+        err instanceof StudioError || err instanceof UserFacingError
           ? err.status
           : 500;
-      // The message never contains the key; GitHub errors don't echo it.
+      // The message never contains a key; GitHub/Bitbucket errors don't echo it.
       res.status(status).json({ error: (err as Error).message });
     }
   };
 
-export const studioStats = handle(async (body) => {
-  const { key, username, from, to, refresh } = parse(StudioStatsRequest, body);
-  const range = { from, to };
+const bitbucketAuth = (email?: string, key?: string): BitbucketAuth => {
+  if (email?.trim() || key?.trim()) {
+    if (!email?.trim() || !key?.trim()) {
+      throw new StudioError(
+        "Enter both your Atlassian account email and the API token.",
+      );
+    }
+
+    return { email: email.trim(), token: key.trim() };
+  }
+
+  const { BITBUCKET_EMAIL, BITBUCKET_API_TOKEN } = backendCredentials();
+  if (!BITBUCKET_EMAIL || !BITBUCKET_API_TOKEN) {
+    throw new StudioError(
+      "Enter your Atlassian account email and a Bitbucket API token, or set BITBUCKET_EMAIL and BITBUCKET_API_TOKEN in .env.",
+    );
+  }
+
+  return { email: BITBUCKET_EMAIL, token: BITBUCKET_API_TOKEN };
+};
+
+const githubStats = async (
+  key: string | undefined,
+  username: string,
+  range: { from: string; to: string },
+  refresh: boolean,
+) => {
   const token = key?.trim() || getGithubToken();
   if (key?.trim()) {
     // Check an entered key even when cached stats would make it unnecessary.
@@ -159,13 +232,48 @@ export const studioStats = handle(async (body) => {
     throw new StudioError(`No GitHub user named "${username}".`, 404);
   }
 
-  if (refresh) {
+  return stats;
+};
+
+export const studioStats = handle(async (body) => {
+  const request = parse(StudioStatsRequest, body);
+  const range = { from: request.from, to: request.to };
+
+  let stats: ProfileStats;
+  let variant: string | undefined;
+  let cached = false;
+  if (request.platform === "github") {
+    stats = await githubStats(
+      request.key,
+      request.username,
+      range,
+      request.refresh,
+    );
+  } else {
+    ({ stats, variant, cached } = await getBitbucketStatsOrCache({
+      auth: bitbucketAuth(request.email, request.key),
+      range,
+      refresh: request.refresh,
+      repos: request.repos,
+    }));
+  }
+
+  const platform = stats.platform ?? "github";
+  if (request.refresh) {
     // New numbers: drop the video and images made from the old ones.
-    clearRange(stats.username, range, rocketValues);
+    clearRange(
+      storeOwner(platform, stats.username, variant),
+      range,
+      rocketValues,
+    );
   }
 
   return {
+    platform,
+    variant: variant ?? null,
+    cached,
     username: stats.username,
+    avatarUrl: stats.avatarUrl ?? null,
     range: stats.range,
     periodLabel: stats.periodLabel,
     fetchedAt: stats.fetchedAt,
@@ -181,10 +289,31 @@ export const studioStats = handle(async (body) => {
     topWeekday: stats.topWeekday,
     topHour: stats.topHour,
     contributionData: stats.contributionData,
+    bitbucket: stats.bitbucket ?? null,
   };
 });
 
+/** Bitbucket repositories to choose from for the range. */
+export const studioBitbucketRepos = handle(async (body) => {
+  const { email, key, from, to } = parse(StudioReposRequest, body);
+  return getBitbucketRepoChoices({
+    auth: bitbucketAuth(email, key),
+    range: { from, to },
+  });
+});
+
 export const studioRender = handle(async (body) => {
-  const { username, theme, from, to } = parse(StudioRenderRequest, body);
-  return renderOrGetProgress({ username, theme, from, to });
+  const { platform, username, theme, from, to, variant, rocketColor } = parse(
+    StudioRenderRequest,
+    body,
+  );
+  return renderOrGetProgress({
+    platform,
+    username,
+    theme,
+    from,
+    to,
+    variant,
+    rocketColor,
+  });
 });

@@ -24,6 +24,7 @@ export const allPlanetsSchema = z.object({
   login: z.string(),
   rocket: rocketSchema,
   octocatSeed: z.number(),
+  hideOctocat: z.boolean().optional(),
 });
 
 const allPlanetsTransitionTiming = springTiming({
@@ -96,6 +97,7 @@ export const AllPlanets: React.FC<z.infer<typeof allPlanetsSchema>> = ({
   topLanguages,
   rocket,
   octocatSeed,
+  hideOctocat,
 }) => {
   const { language1, language2, language3 } = topLanguages;
   const enterDirection = deriveEnterDirectionFromCorner(corner);
@@ -109,6 +111,7 @@ export const AllPlanets: React.FC<z.infer<typeof allPlanetsSchema>> = ({
           pluralizeLanguages={language2 !== null}
           randomizePlanetSeed={login}
           randomizeOctocatSeed={octocatSeed}
+          hideOctocat={hideOctocat}
         />
       </TransitionSeries.Sequence>
       <TransitionSeries.Transition

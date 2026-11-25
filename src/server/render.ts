@@ -4,8 +4,14 @@ import type { RenderResponse } from "../config.js";
 import { RenderRequest, computeCompositionParameters } from "../config.js";
 import type { DateRange } from "../helpers/date-range.js";
 import { rangeKey, resolveRange } from "../helpers/date-range.js";
+import { nearestRocketTheme } from "../helpers/rocket-color.js";
 import { renderVideoLocally } from "./local-renderer.js";
-import { getProfileStatsFromCache, renderFile, renderPath } from "./store.js";
+import {
+  getProfileStatsFromCache,
+  renderFile,
+  renderPath,
+  storeOwner,
+} from "./store.js";
 
 type RenderState =
   { type: "running"; progress: number } | { type: "error"; error: string };
@@ -19,15 +25,29 @@ const renderKey = (username: string, theme: string, range: DateRange) =>
 export const renderOrGetProgress = async (
   requestBody: unknown,
 ): Promise<RenderResponse> => {
-  const { username, theme, from, to } = RenderRequest.parse(requestBody);
+  const {
+    username,
+    theme: requestedTheme,
+    from,
+    to,
+    platform,
+    variant,
+    rocketColor: color,
+  } = RenderRequest.parse(requestBody);
+  const rocketColor = color?.toLowerCase();
+  // A custom colour uses the closest preset's flame and music, and gets its
+  // own cached video.
+  const theme = rocketColor ? nearestRocketTheme(rocketColor) : requestedTheme;
+  const fileTheme = rocketColor ? `color-${rocketColor.slice(1)}` : theme;
   const range = resolveRange({ from, to });
-  const key = renderKey(username, theme, range);
-  const outputFile = renderFile(username, theme, range);
+  const owner = storeOwner(platform, username, variant);
+  const key = renderKey(owner, fileTheme, range);
+  const outputFile = renderFile(owner, fileTheme, range);
 
   if (existsSync(outputFile)) {
     return {
       type: "video-available",
-      url: `/renders/${renderPath(username, theme, range)}`,
+      url: `/renders/${renderPath(owner, fileTheme, range)}`,
     };
   }
 
@@ -42,7 +62,7 @@ export const renderOrGetProgress = async (
     return { type: "render-error", error: state.error };
   }
 
-  const userStat = getProfileStatsFromCache(username, range);
+  const userStat = getProfileStatsFromCache(owner, range);
   if (userStat === "not-found") {
     return { type: "render-error", error: "User not found" };
   }
@@ -51,7 +71,7 @@ export const renderOrGetProgress = async (
     return { type: "render-error", error: "User not fetched" };
   }
 
-  const inputProps = computeCompositionParameters(userStat, theme);
+  const inputProps = computeCompositionParameters(userStat, theme, rocketColor);
 
   renders.set(key, { type: "running", progress: 0 });
   console.log(

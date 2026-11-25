@@ -23,6 +23,7 @@ export const AnimatedCockpit: React.FC<{
   readonly totalStarCount: number;
   readonly durationOfStars: number;
   readonly timeUntilTabletHides: number;
+  readonly starsLabel?: string;
 }> = ({
   xShake,
   yShake,
@@ -33,6 +34,7 @@ export const AnimatedCockpit: React.FC<{
   totalStarCount,
   durationOfStars,
   timeUntilTabletHides,
+  starsLabel,
 }) => {
   const { fps } = useVideoConfig();
   const frame = useCurrentFrame();
@@ -82,6 +84,7 @@ export const AnimatedCockpit: React.FC<{
           repoText={repoText}
           starCount={starCount}
           totalStarCount={totalStarCount}
+          starsLabel={starsLabel}
         />
       </Sequence>
     </AbsoluteFill>

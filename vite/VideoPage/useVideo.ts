@@ -3,7 +3,7 @@ import type { z } from "zod";
 import type { RenderRequest, RenderResponse, Rocket } from "../../src/config";
 
 const renderVideo = async (
-  renderRequest: z.infer<typeof RenderRequest>,
+  renderRequest: z.input<typeof RenderRequest>,
   signal: AbortSignal,
 ): Promise<RenderResponse> => {
   const res = await fetch("/api/render", {

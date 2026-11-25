@@ -9,7 +9,8 @@ export type RepoText = {
 
 export const HeadsUpDisplay: React.FC<{
   readonly textToDisplay: RepoText | null;
-}> = ({ textToDisplay }) => {
+  readonly defaultLabel?: string;
+}> = ({ textToDisplay, defaultLabel }) => {
   return (
     <AbsoluteFill
       style={{
@@ -71,7 +72,9 @@ export const HeadsUpDisplay: React.FC<{
               overflow: "hidden",
             }}
           >
-            {textToDisplay ? textToDisplay.text : "repos starred"}
+            {textToDisplay
+              ? textToDisplay.text
+              : (defaultLabel ?? "repos starred")}
           </div>
         </span>
       </div>

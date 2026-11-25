@@ -21,6 +21,7 @@ import { renderEndPoint } from "./render.js";
 import { igStoryImageEndpoint, socialMediaPreview } from "./social-preview.js";
 import { rendersDir } from "./store.js";
 import {
+  studioBitbucketRepos,
   studioGuard,
   studioPage,
   studioRender,
@@ -93,6 +94,7 @@ export const startServer = async () => {
   app.use("/api/studio", studioGuard);
   app.post("/api/studio/stats", studioStats);
   app.post("/api/studio/render", studioRender);
+  app.post("/api/studio/bitbucket/repos", studioBitbucketRepos);
 
   app.get("/favicon.ico", apiEndpointWrapper(faviconEndPoint));
   app.get(REDIRECT_URL_ENDPOINT, apiEndpointWrapper(loginEndPoint));
