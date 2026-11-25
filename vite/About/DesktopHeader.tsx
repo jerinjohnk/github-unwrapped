@@ -20,7 +20,7 @@ export const DesktopHeader: React.FC<{
         }}
       >
         <Link to={"/"}>
-          <h2 className={gradientStyles.gradientText2}>#GitHubUnwrapped</h2>
+          <h2 className={gradientStyles.gradientText2}>GitHubUnwrapped</h2>
         </Link>
         <h1
           className={commonStyles.aboutTitle}

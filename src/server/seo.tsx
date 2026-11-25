@@ -18,7 +18,7 @@ const makeAppHead = async (
   params: { handleUsername: boolean; stats: boolean },
 ): Promise<AppHead> => {
   if (username === null) {
-    const title = `#GitHubUnwrapped - Your coding year in review`;
+    const title = `GitHubUnwrapped - Your coding year in review`;
 
     const mainSocialPreview = `${backendCredentials().VITE_HOST}/og_image.jpg`;
     const mainCanonical = `${backendCredentials().VITE_HOST}`;
@@ -47,7 +47,7 @@ const makeAppHead = async (
 
   if (!params.stats) {
     const newHead = renderToString(
-      <title>{`${username}'s #GitHubUnwrapped`}</title>,
+      <title>{`${username}'s GitHubUnwrapped`}</title>,
     );
     return { head: newHead, status: 200, cache: true };
   }
@@ -81,7 +81,7 @@ const makeAppHead = async (
     );
   }
 
-  const usernameTitle = `${stats.username}'s #GitHubUnwrapped`;
+  const usernameTitle = `${stats.username}'s GitHubUnwrapped`;
   const canonical = `${backendCredentials().VITE_HOST}/${username}`;
   const socialPreview = `${backendCredentials().VITE_HOST}/og/${username}.jpg`;
   const description = `See ${username}'s year in review and get your own.`;

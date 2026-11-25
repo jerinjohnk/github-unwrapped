@@ -83,7 +83,7 @@ export const PromoVideoTitle: React.FC<{
             WebkitTextFillColor: "transparent",
           }}
         >
-          #GitHubUnwrapped
+          GitHubUnwrapped
         </div>
         <div
           style={{

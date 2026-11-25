@@ -84,7 +84,7 @@ export const IgStory: React.FC<z.infer<typeof ogImageSchema>> = (props) => {
             fontWeight: "bolder",
           }}
         >
-          #GitHubUnwrapped
+          GitHubUnwrapped
         </div>
       </AbsoluteFill>
     </AbsoluteFill>

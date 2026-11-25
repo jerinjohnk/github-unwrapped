@@ -12,7 +12,7 @@ export const HomeBoxTop: React.FC = () => {
         style={{ fontSize: 18, marginLeft: 7 }}
         className={gradientStyles.gradientText2}
       >
-        #GitHubUnwrapped
+        GitHubUnwrapped
       </h2>
       <div className={boxStyles.linkContainer}>
         <HomeLink
