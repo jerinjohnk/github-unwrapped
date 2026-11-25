@@ -51,7 +51,6 @@ export const Noise: React.FC<z.infer<typeof noiseSchema>> = ({
   const memoizedSamples = useMemo(() => {
     return samples.map((sample, i) => {
       return (
-        // eslint-disable-next-line react/no-array-index-key
         <div key={i} style={{ display: "flex", flexDirection: "row" }}>
           {sample.map((s, j) => {
             if (s.x < 0.9) {
@@ -65,7 +64,6 @@ export const Noise: React.FC<z.infer<typeof noiseSchema>> = ({
 
             return (
               <div
-                // eslint-disable-next-line react/no-array-index-key
                 key={`${i}-${j}`}
                 style={{
                   width: 6 * randomDigit2 * 0.1,

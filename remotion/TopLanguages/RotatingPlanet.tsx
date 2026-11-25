@@ -41,7 +41,6 @@ export const RotatingPlanet: React.FC<{
     <div>
       <Series>
         {sortedRandomly.map((Planet, i) => (
-          // eslint-disable-next-line react/no-array-index-key
           <Series.Sequence key={i} durationInFrames={16} layout="none">
             <LanguagePlanet planetInfo={Planet} style={planetStyle} />
           </Series.Sequence>

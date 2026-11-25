@@ -9,7 +9,7 @@ export const RocketPicker: React.FC<{
   rocket: Rocket;
   setIsModalOpen: React.Dispatch<SetStateAction<boolean>>;
   setIsPlaying: React.Dispatch<SetStateAction<boolean>>;
-  playerRef: React.RefObject<PlayerRef>;
+  playerRef: React.RefObject<PlayerRef | null>;
 }> = ({ rocket, setIsModalOpen, setIsPlaying, playerRef }) => {
   const source = useMemo(() => {
     return getSideRocketSource(rocket);

@@ -1,4 +1,9 @@
-import { Outlet, RootRoute, Route, Router } from "@tanstack/react-router";
+import {
+  Outlet,
+  createRootRoute,
+  createRoute,
+  createRouter,
+} from "@tanstack/react-router";
 import About from "./About/About.jsx";
 import { Dashboard } from "./Dashboard.jsx";
 import Home from "./Home.jsx";
@@ -19,7 +24,7 @@ import { UserVideoContextProvider } from "./context.jsx";
 //         })),
 //       );
 
-const rootRoute = new RootRoute({
+const rootRoute = createRootRoute({
   component: () => (
     <>
       <Outlet />
@@ -31,7 +36,7 @@ const rootRoute = new RootRoute({
 /**
  * INDEX ROUTE
  */
-const indexRoute = new Route({
+const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/",
   component: Home,
@@ -41,7 +46,7 @@ const indexRoute = new Route({
  * USER ROUTES
  */
 
-export const userRoute = new Route({
+export const userRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "$username",
   component: () => (
@@ -51,13 +56,13 @@ export const userRoute = new Route({
   ),
 });
 
-export const videoRoute = new Route({
+export const videoRoute = createRoute({
   getParentRoute: () => userRoute,
   path: "/",
   component: UserPage,
 });
 
-export const shareRoute = new Route({
+export const shareRoute = createRoute({
   getParentRoute: () => userRoute,
   path: "share",
   component: SharePage,
@@ -73,7 +78,7 @@ export const shareRoute = new Route({
  * ABOUT ROUTE
  */
 
-const aboutRoute = new Route({
+const aboutRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/about",
   component: About,
@@ -83,7 +88,7 @@ const aboutRoute = new Route({
  * LOADING ROUTE
  */
 
-const loadingRoute = new Route({
+const loadingRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/loading/$username",
   component: Loading,
@@ -93,7 +98,7 @@ const loadingRoute = new Route({
  * DASHBOARD ROUTE
  */
 
-const dashboardRoute = new Route({
+const dashboardRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/dashboard",
   component: Dashboard,
@@ -108,7 +113,7 @@ const routeTree = rootRoute.addChildren([
 ]);
 
 // Create the router using your route tree
-export const router = new Router({ routeTree });
+export const router = createRouter({ routeTree });
 
 declare module "@tanstack/react-router" {
   interface Register {

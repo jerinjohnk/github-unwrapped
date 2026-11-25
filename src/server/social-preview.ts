@@ -2,8 +2,8 @@ import type { Request, Response } from "express";
 import { makeOrGetIgStory, makeOrGetOgImage } from "./make-og-image.js";
 import { getProfileStatsFromCache } from "./store.js";
 
-const getStats = async (username: string | undefined) => {
-  if (!username) {
+const getStats = async (username: string | string[] | undefined) => {
+  if (typeof username !== "string" || !username) {
     throw new Error("No username provided");
   }
 
@@ -20,7 +20,7 @@ export const socialMediaPreview = async (req: Request, res: Response) => {
   const file = await makeOrGetOgImage(stats);
 
   res.set("Content-Type", "image/jpeg");
-  res.sendFile(file);
+  res.sendFile(file, { dotfiles: "allow" });
 };
 
 export const igStoryImageEndpoint = async (req: Request, res: Response) => {
@@ -32,5 +32,5 @@ export const igStoryImageEndpoint = async (req: Request, res: Response) => {
     `attachment; filename="${stats.username}.jpeg"`,
   );
   res.set("Content-Type", "image/jpeg");
-  res.sendFile(file);
+  res.sendFile(file, { dotfiles: "allow" });
 };

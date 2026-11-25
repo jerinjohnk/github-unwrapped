@@ -141,18 +141,12 @@ export const Shines: React.FC<{
     return new Array(150).fill(true).map((a, i) => {
       return (
         <Sequence
-          // eslint-disable-next-line react/no-array-index-key
           key={i}
           from={i * 1.5}
           style={sequenceStyle}
           durationInFrames={10}
         >
-          <ShineSequence
-            // eslint-disable-next-line react/no-array-index-key
-            key={i}
-            i={i}
-            rotationShake={rotationShake}
-          />
+          <ShineSequence key={i} i={i} rotationShake={rotationShake} />
         </Sequence>
       );
     });

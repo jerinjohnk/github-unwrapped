@@ -24,7 +24,7 @@ and videos are rendered locally with Remotion. No AWS, MongoDB, Discord or Sentr
 
 ### Requirements
 
-- Node.js 18.18 or newer
+- Node.js 20.19+ or 22.12+ (required by Vite 8)
 - A GitHub personal access token: create one at https://github.com/settings/tokens
   (classic or fine-grained, no scopes needed for public data)
 - Around 1 GB of free disk space. Remotion downloads a headless Chrome on the first render.

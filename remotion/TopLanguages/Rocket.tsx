@@ -1,8 +1,8 @@
-import { getPointAtLength } from "@remotion/paths";
 import { AbsoluteFill, interpolate, useCurrentFrame } from "remotion";
 import type { Rocket } from "../../src/config";
 import { TRANSFORM_PATH_X, TRANSFORM_PATH_Y } from "../../types/constants";
 import { moveAlongLine } from "../move-along-line";
+import { getPointAtLength } from "../safe-paths";
 import {
   PLANET_1_POSITION,
   PLANET_2_POSITION,

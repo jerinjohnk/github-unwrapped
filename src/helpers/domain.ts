@@ -28,7 +28,7 @@ const parseBackendCredentials = () => {
       const token = GITHUB_TOKEN ?? GITHUB_TOKEN_1;
       if (!token) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: "custom",
           message:
             "GITHUB_TOKEN is missing. Create a personal access token at https://github.com/settings/tokens and add it to your .env file.",
         });
@@ -46,7 +46,7 @@ let parsedBackendCredentials: ReturnType<
 
 export const backendCredentials = () => {
   if (!parsedBackendCredentials) {
-    config();
+    config({ quiet: true });
     parsedBackendCredentials = parseBackendCredentials();
   }
 

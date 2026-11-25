@@ -42,7 +42,6 @@ export const ContributionGraphic: React.FC<{
       }}
     >
       {graphData.map((g, i) => {
-        // eslint-disable-next-line react/no-array-index-key
         return <Dot key={i} max={Math.max(...graphData)} value={g} index={i} />;
       })}
     </div>

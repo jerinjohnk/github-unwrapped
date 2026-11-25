@@ -15,6 +15,12 @@ export const viteDistDir = path.join(viteDir, "dist");
 
 export const nodeEnv = backendCredentials().NODE_ENV;
 
+// Express 5 types route params as string | string[].
+const usernameParam = (req: Request): string | null =>
+  typeof req.params.username === "string" && req.params.username
+    ? req.params.username
+    : null;
+
 const viteIndexHtml =
   nodeEnv === "development"
     ? path.join(viteDir, "index.html")
@@ -31,7 +37,7 @@ export const indexHtmlDev = (
     const transformed = await vite.transformIndexHtml(req.url, template);
 
     if (params.handleUsername) {
-      const username = req.params.username || null;
+      const username = usernameParam(req);
       const reset = req.query.reset || null;
 
       if (username === null) {
@@ -52,7 +58,7 @@ export const indexHtmlDev = (
     }
 
     const { html, status } = await replaceAppHead(
-      req.params.username ?? null,
+      usernameParam(req),
       transformed,
       params,
     );
@@ -74,7 +80,7 @@ export const indexHtmlProduction = ({
 
   return async (req: Request, response: Response) => {
     if (handleUsername) {
-      const username = req.params.username || null;
+      const username = usernameParam(req);
       const reset = req.query.reset || null;
 
       if (username === null) {
@@ -95,7 +101,7 @@ export const indexHtmlProduction = ({
     }
 
     const { html, status } = await replaceAppHead(
-      req.params.username ?? null,
+      usernameParam(req),
       template,
       { handleUsername, stats },
     );

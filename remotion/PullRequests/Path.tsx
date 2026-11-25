@@ -1,4 +1,4 @@
-import { evolvePath, getLength, getPointAtLength } from "@remotion/paths";
+import { evolvePath, getLength } from "@remotion/paths";
 import { useMemo } from "react";
 import {
   AbsoluteFill,
@@ -8,6 +8,7 @@ import {
   staticFile,
   useCurrentFrame,
 } from "remotion";
+import { getPointAtLength } from "../safe-paths";
 
 export const PATHS_COMP_HEIGHT = 4275;
 export const PATH_ANIMATION_DURATION = 200;

@@ -62,7 +62,6 @@ const makeAppHead = async (
       <>
         <title>404</title>
         <script
-          // eslint-disable-next-line react/no-danger
           dangerouslySetInnerHTML={{
             __html: `window.__USER__ = ${JSON.stringify(stats)}`,
           }}
@@ -100,7 +99,6 @@ const makeAppHead = async (
       <meta name="twitter:site" content="@remotion" />
 
       <script
-        // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{
           __html: `window.__USER__ = ${JSON.stringify(stats)}`,
         }}
@@ -134,7 +132,6 @@ export const replaceAppHead = async (
           <>
             <title>Lost in space...</title>
             <script
-              // eslint-disable-next-line react/no-danger
               dangerouslySetInnerHTML={{
                 __html: `
                 window.__USER__ = ${null};

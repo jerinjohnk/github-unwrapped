@@ -24,7 +24,6 @@ export const Loading = () => {
       })
       .then((payload) => {
         if (payload.error) {
-          // eslint-disable-next-line no-alert
           window.alert(payload.error);
           return;
         }

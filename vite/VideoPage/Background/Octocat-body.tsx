@@ -1,5 +1,6 @@
-import { getLength, getPointAtLength } from "@remotion/paths";
+import { getLength } from "@remotion/paths";
 import { createRef } from "react";
+import { getPointAtLength } from "../../../remotion/safe-paths";
 
 export const bodyRef = createRef<SVGGElement>();
 

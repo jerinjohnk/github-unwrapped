@@ -1,7 +1,8 @@
 import { noise2D } from "@remotion/noise";
-import { getLength, getTangentAtLength } from "@remotion/paths";
+import { getLength } from "@remotion/paths";
 import { spring, useCurrentFrame, useVideoConfig } from "remotion";
 import { OctocatBody } from "../../vite/VideoPage/Background/Octocat-body";
+import { getTangentAtLength } from "../safe-paths";
 import { NewOctocatLine } from "./NewOctocatLine";
 import { getOctocatLine } from "./octocat-line";
 

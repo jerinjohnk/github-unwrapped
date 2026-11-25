@@ -94,7 +94,6 @@ const Thread = (props: { readonly thread: ThreadT }) => {
       {props.thread.orbs.map((orb, j) => {
         return (
           <AbsoluteFill
-            // eslint-disable-next-line react/no-array-index-key
             key={j}
             style={{ top: orb.top, transform: `scale(${props.thread.size})` }}
           >
@@ -122,7 +121,7 @@ export const Threads: React.FC = () => {
           left,
           speed: random(i + "speedx") * (THREAD_SPEED / 2),
           size: Number(random(i + "size")) + 0.3,
-          // eslint-disable-next-line @typescript-eslint/no-shadow
+
           orbs: new Array(12).fill(0).map((_, j) => ({
             top: random(i + "top") * 100 + 250 * j,
             type: Math.floor(random(i + "type") * 11) + 1,
@@ -135,7 +134,6 @@ export const Threads: React.FC = () => {
   return (
     <>
       {threads.map((thread, i) => (
-        // eslint-disable-next-line react/no-array-index-key
         <Thread key={i} thread={thread} />
       ))}
     </>

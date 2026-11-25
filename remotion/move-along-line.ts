@@ -1,8 +1,5 @@
-import {
-  getLength,
-  getPointAtLength,
-  getTangentAtLength,
-} from "@remotion/paths";
+import { getLength } from "@remotion/paths";
+import { getPointAtLength, getTangentAtLength } from "./safe-paths";
 
 export const moveAlongLine = (path: string, progress: number) => {
   const length = getLength(path);

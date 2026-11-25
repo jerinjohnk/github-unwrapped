@@ -109,7 +109,10 @@ export const startServer = async () => {
       "/:username/share",
       indexHtmlDev(vite, { stats: true, handleUsername: false }),
     );
-    app.get("*", indexHtmlDev(vite, { stats: true, handleUsername: false }));
+    app.get(
+      "/{*splat}",
+      indexHtmlDev(vite, { stats: true, handleUsername: false }),
+    );
   } else {
     app.get("/", indexHtmlProduction({ stats: true, handleUsername: false }));
     app.use(serveStatic(viteDistDir));
@@ -134,7 +137,10 @@ export const startServer = async () => {
       "/:username/share",
       indexHtmlProduction({ handleUsername: false, stats: true }),
     );
-    app.get("*", indexHtmlProduction({ handleUsername: false, stats: true }));
+    app.get(
+      "/{*splat}",
+      indexHtmlProduction({ handleUsername: false, stats: true }),
+    );
   }
 
   const port = process.env.PORT || 8080;

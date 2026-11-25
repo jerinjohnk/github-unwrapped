@@ -82,11 +82,7 @@ export const ZeroIssues: React.FC = () => {
       }}
     >
       {new Array(9).fill(true).map((_, i) => (
-        <UfoPosition
-          // eslint-disable-next-line react/no-array-index-key
-          key={i}
-          index={i}
-        />
+        <UfoPosition key={i} index={i} />
       ))}
       <div
         style={{

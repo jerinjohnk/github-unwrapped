@@ -35,7 +35,7 @@ const ButtonForward: React.ForwardRefRenderFunction<
   return (
     <button
       ref={ref}
-      // eslint-disable-next-line react/button-has-type
+
       type={type ?? "button"}
       className={[
         styles.button,

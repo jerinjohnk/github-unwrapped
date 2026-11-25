@@ -30,7 +30,6 @@ export const Spinner: React.FC<{
       {new Array(lines).fill(true).map((_, index) => {
         return (
           <path
-            // eslint-disable-next-line react/no-array-index-key
             key={index}
             className={styles.line}
             style={{

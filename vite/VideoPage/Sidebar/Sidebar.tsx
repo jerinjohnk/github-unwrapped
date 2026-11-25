@@ -14,7 +14,7 @@ export const Sidebar: React.FC<{
   readonly setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   readonly rocket: Rocket;
   readonly setIsPlaying: React.Dispatch<React.SetStateAction<boolean>>;
-  readonly playerRef: React.RefObject<PlayerRef>;
+  readonly playerRef: React.RefObject<PlayerRef | null>;
   readonly status: RenderStatus;
 }> = ({
   inputProps,

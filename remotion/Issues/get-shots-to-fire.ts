@@ -76,7 +76,6 @@ export const getShotsToFire = ({
   const shots: Shot[] = [];
   let ufoToShoot: number | null = closedIndices[0];
 
-  // eslint-disable-next-line no-constant-condition
   while (true) {
     if (ufosHit.length >= closedIndices.length) {
       break;

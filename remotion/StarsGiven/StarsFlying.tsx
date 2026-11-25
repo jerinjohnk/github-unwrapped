@@ -39,7 +39,7 @@ export const StarsFlying: React.FC<{
   return (
     <AbsoluteFill>
       {new Array(getActualStars(starsGiven)).fill(true).map((_, index) => (
-        <Sequence // eslint-disable-next-line react/no-array-index-key
+        <Sequence
           key={index}
           from={index * TIME_INBETWEEN_STARS + STAR_ANIMATION_DELAY}
         >

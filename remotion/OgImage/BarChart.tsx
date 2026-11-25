@@ -67,7 +67,6 @@ export const BarChart: React.FC<{
       {graphData.map((_, i) => {
         return (
           <Bar
-            // eslint-disable-next-line react/no-array-index-key
             key={i}
             progress={_ / highest}
             letter={["M", "T", "W", "T", "F", "S", "S"][i]}

@@ -222,7 +222,6 @@ export const Issues: React.FC<z.infer<typeof issuesSchema>> = ({
         {withShootDurations.map((p, i) => {
           return (
             <Sequence
-              // eslint-disable-next-line react/no-array-index-key
               key={i}
               showInTimeline={false}
               durationInFrames={getShootDuration(shots) + p.shootDelay}
@@ -241,7 +240,6 @@ export const Issues: React.FC<z.infer<typeof issuesSchema>> = ({
           const explosion = explosions.find((e) => e.index === i);
           return (
             <Sequence
-              // eslint-disable-next-line react/no-array-index-key
               key={i}
               showInTimeline={false}
               durationInFrames={
@@ -266,7 +264,6 @@ export const Issues: React.FC<z.infer<typeof issuesSchema>> = ({
         {explosions.map((explosion, i) => {
           return (
             <Sequence
-              // eslint-disable-next-line react/no-array-index-key
               key={i}
               showInTimeline={false}
               from={explosion.explodeAfterFrames}
@@ -279,7 +276,6 @@ export const Issues: React.FC<z.infer<typeof issuesSchema>> = ({
         })}
         {audioHits.map((audioHit, i) => {
           return (
-            // eslint-disable-next-line react/no-array-index-key
             <Sequence key={i} from={audioHit.delay}>
               {isMobileDevice() ? null : <Audio src={audioHit.source} />}
             </Sequence>

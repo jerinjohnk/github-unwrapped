@@ -14,7 +14,7 @@ export const VideoBoxTop: React.FC<{
   rocket: Rocket;
   setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setIsPlaying: React.Dispatch<React.SetStateAction<boolean>>;
-  playerRef: React.RefObject<PlayerRef>;
+  playerRef: React.RefObject<PlayerRef | null>;
 }> = ({ inputProps, rocket, setIsModalOpen, setIsPlaying, playerRef }) => {
   return (
     <div className={boxStyles.headerTopContainer} style={{ display: "flex" }}>

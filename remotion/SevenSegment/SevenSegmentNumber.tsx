@@ -54,7 +54,6 @@ export const SevenSegment: React.FC<z.infer<typeof sevenSegmentSchema>> = ({
 
         return (
           <div
-            // eslint-disable-next-line react/no-array-index-key
             key={i + n}
             style={{
               aspectRatio: "119 / 172",

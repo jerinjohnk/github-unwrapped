@@ -26,7 +26,7 @@ export const PlayerContainer: React.FC<{
   inputProps: z.infer<typeof compositionSchema>;
   isPlaying: boolean;
   setIsPlaying: React.Dispatch<React.SetStateAction<boolean>>;
-  playerRef: React.RefObject<PlayerRef>;
+  playerRef: React.RefObject<PlayerRef | null>;
 }> = ({ inputProps, isPlaying, setIsPlaying, playerRef }) => {
   useEffect(() => {
     const { current } = playerRef;

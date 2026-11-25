@@ -1,6 +1,6 @@
+import { animated, useTransition } from "@react-spring/web";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { animated, useTransition } from "react-spring";
 import { GithubIcon } from "../../icons/GithubIcon";
 import { NewRocketIcon } from "../../icons/NewRocketIcon";
 import styles from "./burger.module.css";

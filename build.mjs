@@ -5,7 +5,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { build } from "vite";
 
-config();
+config({ quiet: true });
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 

@@ -24,7 +24,7 @@ export const RocketPickerModal: React.FC<{
   setRocket: React.Dispatch<SetStateAction<Rocket | null>>;
   setIsModalOpen: React.Dispatch<SetStateAction<boolean>>;
   isModalOpen: boolean;
-  playerRef: React.RefObject<PlayerRef>;
+  playerRef: React.RefObject<PlayerRef | null>;
   isPlaying: boolean;
   setIsPlaying: React.Dispatch<SetStateAction<boolean>>;
 }> = ({ rocket, setRocket, setIsModalOpen, isModalOpen }) => {
