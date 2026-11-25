@@ -242,6 +242,10 @@ export const generateRandomCorner = ({
 export type ProfileStats = {
   // Missing on stats cached before Bitbucket support: means GitHub.
   platform?: Platform;
+  // GitHub: contributions in repositories the key can't read (private ones
+  // without access). Pull requests, issues, commits and languages from those
+  // repositories are missing from the stats.
+  restrictedContributions?: number;
   avatarUrl?: string;
   bitbucket?: BitbucketSummary;
   // The inclusive date range every number below was filtered to.

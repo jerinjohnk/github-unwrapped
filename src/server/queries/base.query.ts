@@ -69,6 +69,8 @@ export type BaseQueryResponse = {
   avatarUrl: string;
   login: string;
   contributionsCollection: {
+    // Contributions in repositories the key can't read (e.g. private ones).
+    restrictedContributionsCount: number;
     contributionCalendar: {
       totalContributions: number;
       weeks: {

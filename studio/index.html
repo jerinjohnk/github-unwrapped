@@ -106,7 +106,9 @@ video { display: block; width: 100%; max-width: 540px; border-radius: 10px; marg
       <div id="gh-fields">
         <p class="hint">A GitHub personal access token from
           <a href="https://github.com/settings/tokens" target="_blank" rel="noopener">github.com/settings/tokens</a>
-          (no scopes needed for public data). <span id="env-hint"></span></p>
+          (no scopes needed for public data; to include <b>private repositories</b>, give it read access to them:
+          a fine-grained token with Contents, Pull requests and Issues read, or a classic token with the
+          <code>repo</code> scope). <span id="env-hint"></span></p>
         <div class="row">
           <input type="password" id="key" class="grow" placeholder="ghp_…" autocomplete="off" spellcheck="false"
             aria-label="GitHub personal access token">
@@ -624,6 +626,12 @@ video { display: block; width: 100%; max-width: 540px; border-radius: 10px; marg
       note.textContent = `From your pull requests in ${fmt(bb.repositories)} repositor${bb.repositories === 1 ? "y" : "ies"} (${fmt(bb.workspaces)} workspace${bb.workspaces === 1 ? "" : "s"}, ${fmt(bb.requests)} API requests). ` +
         "Contributions = your commits + PRs opened + PRs approved, per day in IST. Languages and PR sizes come from the code files your PRs changed." +
         (bb.complete ? "" : ` Some data was not read, so a few numbers may be low: ${(bb.gaps || []).join("; ")}.`);
+    } else if (s.platform === "github" && s.restrictedContributions > 0) {
+      note.classList.remove("hidden");
+      note.className = "status error";
+      note.textContent = `${fmt(s.restrictedContributions)} contributions are in repositories this key can't read (usually private ones), ` +
+        "so pull requests, issues, commits and languages from them are missing. Give the key read access to those repositories " +
+        "(fine-grained token: Repository access + Contents, Pull requests and Issues read; or a classic token with the repo scope), then fetch again with Refetch ticked.";
     } else {
       note.classList.add("hidden");
     }

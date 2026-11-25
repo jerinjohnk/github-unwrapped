@@ -141,6 +141,8 @@ export const getStatsFromGitHub = async ({
     // Sum of the in-range days (what the grid shows), so totals of adjacent
     // ranges add up. GitHub's calendar total can include activity from days
     // just outside the range, as its day boundaries are not IST midnights.
+    restrictedContributions:
+      baseData.contributionsCollection.restrictedContributionsCount,
     totalContributions: allDays.reduce(
       (sum, d) => sum + d.contributionCount,
       0,

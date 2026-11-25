@@ -290,6 +290,7 @@ export const studioStats = handle(async (body) => {
     topHour: stats.topHour,
     contributionData: stats.contributionData,
     bitbucket: stats.bitbucket ?? null,
+    restrictedContributions: stats.restrictedContributions ?? 0,
   };
 });
 

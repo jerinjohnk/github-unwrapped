@@ -26,7 +26,11 @@ and videos are rendered locally with Remotion. No AWS, MongoDB, Discord or Sentr
 
 - Node.js 20.19+ or 22.12+ (required by Vite 8)
 - A GitHub personal access token: create one at https://github.com/settings/tokens
-  (classic or fine-grained, no scopes needed for public data)
+  (classic or fine-grained, no scopes needed for public data). To include **private repositories**,
+  the token must be able to read them: a fine-grained token with access to those repositories
+  (Contents, Pull requests and Issues: read; for an organization's repositories, the organization
+  as resource owner, and it may need to approve the token), or a classic token with the `repo` scope.
+  Without that, Studio shows how many contributions it couldn't see.
 - Around 1 GB of free disk space. Remotion downloads a headless Chrome on the first render.
 
 ### Setup
