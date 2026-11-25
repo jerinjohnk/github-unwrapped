@@ -94,21 +94,6 @@ export const CallToAction: React.FC<{
             style={{
               fontFamily: "Mona Sans",
               color: "white",
-              fontSize: 30,
-              fontWeight: "500",
-              backgroundClip: "text",
-              backgroundImage: gradient,
-              WebkitBackgroundClip: "text",
-              backgroundColor: "text",
-              WebkitTextFillColor: "transparent",
-            }}
-          >
-            Get your Year in Review
-          </div>
-          <div
-            style={{
-              fontFamily: "Mona Sans",
-              color: "white",
               fontSize: 50,
               fontWeight: "bold",
               backgroundClip: "text",
@@ -118,7 +103,7 @@ export const CallToAction: React.FC<{
               WebkitTextFillColor: "transparent",
             }}
           >
-            GitHubUnwrapped.com
+            GitHubUnwrapped
           </div>
         </div>
       </div>
