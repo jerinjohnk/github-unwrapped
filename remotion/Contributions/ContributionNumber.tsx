@@ -1,7 +1,7 @@
 import React from "react";
 
 export const ContributionNumber: React.FC<{
-  readonly currentNumber: number;
+  readonly currentNumber: number | string;
   readonly suffix: string;
 }> = ({ currentNumber, suffix }) => {
   return (

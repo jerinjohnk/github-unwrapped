@@ -1,9 +1,10 @@
 // Local, file-based replacement for the MongoDB cache used in production.
-// Everything lives in `.local-data/` at the repo root (gitignored):
-//   stats/<username>.json          cached GitHub stats
-//   renders/<username>-<theme>.mp4 rendered videos
-//   og/<username>.jpg              social preview images
-//   ig/<username>.jpg              Instagram story images
+// Everything lives in `.local-data/` at the repo root (gitignored), one folder
+// per user, one file per date range (<range> = <from>_<to>):
+//   stats/<username>/<range>.json            cached GitHub stats
+//   renders/<username>/<theme>_<range>.mp4   rendered videos
+//   og/<username>/<range>.jpg                social preview images
+//   ig/<username>/<range>.jpg                Instagram story images
 
 import {
   existsSync,
@@ -16,7 +17,8 @@ import { writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import path from "path";
 import type { ProfileStats } from "../config.js";
-import { rocketValues } from "../config.js";
+import type { DateRange } from "../helpers/date-range.js";
+import { rangeKey } from "../helpers/date-range.js";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 export const rootDir = path.join(__dirname, "..", "..");
@@ -46,32 +48,46 @@ type ProfileSchema =
 const safeName = (username: string) =>
   username.toLowerCase().replace(/[^a-z0-9-]/g, "");
 
-const statsFile = (username: string) =>
-  path.join(statsDir, `${safeName(username)}.json`);
+const userFile = (dir: string, username: string, fileName: string) => {
+  const userDir = path.join(dir, safeName(username));
+  mkdirSync(userDir, { recursive: true });
+  return path.join(userDir, fileName);
+};
 
-export const renderFileName = (username: string, theme: string) =>
-  `${safeName(username)}-${safeName(theme)}.mp4`;
+const statsFile = (username: string, range: DateRange) =>
+  userFile(statsDir, username, `${rangeKey(range)}.json`);
 
-export const renderFile = (username: string, theme: string) =>
-  path.join(rendersDir, renderFileName(username, theme));
+const renderFileName = (theme: string, range: DateRange) =>
+  `${safeName(theme)}_${rangeKey(range)}.mp4`;
 
-export const ogImageFile = (username: string) =>
-  path.join(ogDir, `${safeName(username)}.jpg`);
+/** Path of the video relative to rendersDir, as served under /renders/. */
+export const renderPath = (username: string, theme: string, range: DateRange) =>
+  `${safeName(username)}/${renderFileName(theme, range)}`;
 
-export const igStoryFile = (username: string) =>
-  path.join(igDir, `${safeName(username)}.jpg`);
+export const renderFile = (username: string, theme: string, range: DateRange) =>
+  userFile(rendersDir, username, renderFileName(theme, range));
 
-export const insertProfileStats = async (stats: ProfileSchema) => {
+export const ogImageFile = (username: string, range: DateRange) =>
+  userFile(ogDir, username, `${rangeKey(range)}.jpg`);
+
+export const igStoryFile = (username: string, range: DateRange) =>
+  userFile(igDir, username, `${rangeKey(range)}.jpg`);
+
+export const insertProfileStats = async (
+  stats: ProfileSchema,
+  range: DateRange,
+) => {
   await writeFile(
-    statsFile(stats.lowercasedUsername),
+    statsFile(stats.lowercasedUsername, range),
     JSON.stringify(stats, null, 2),
   );
 };
 
 export const getProfileStatsFromCache = (
   username: string,
+  range: DateRange,
 ): ProfileStats | "not-found" | null => {
-  const file = statsFile(username);
+  const file = statsFile(username, range);
   if (!existsSync(file)) {
     return null;
   }
@@ -80,17 +96,37 @@ export const getProfileStatsFromCache = (
   return value.type === "found" ? value.profile : "not-found";
 };
 
-export const clearRendersForUsername = ({ username }: { username: string }) => {
-  for (const theme of rocketValues) {
-    rmSync(renderFile(username, theme), { force: true });
-  }
+const clearUserDir = (dir: string, username: string) => {
+  rmSync(path.join(dir, safeName(username)), { recursive: true, force: true });
 };
 
+/** Removes every cached video of a user, for all ranges and themes. */
+export const clearRendersForUsername = ({ username }: { username: string }) => {
+  clearUserDir(rendersDir, username);
+};
+
+/** Removes every cached image of a user, for all ranges. */
 export const clearImagesForUsername = ({ username }: { username: string }) => {
-  rmSync(ogImageFile(username), { force: true });
-  rmSync(igStoryFile(username), { force: true });
+  clearUserDir(ogDir, username);
+  clearUserDir(igDir, username);
 };
 
 export const getNumberOfRenders = () => {
-  return readdirSync(rendersDir).filter((f) => f.endsWith(".mp4")).length;
+  return readdirSync(rendersDir, { recursive: true }).filter((f) =>
+    String(f).endsWith(".mp4"),
+  ).length;
+};
+
+/** Removes the videos and images of one user and range (stats are overwritten on refetch). */
+export const clearRange = (
+  username: string,
+  range: DateRange,
+  themes: readonly string[],
+) => {
+  for (const theme of themes) {
+    rmSync(renderFile(username, theme, range), { force: true });
+  }
+
+  rmSync(ogImageFile(username, range), { force: true });
+  rmSync(igStoryFile(username, range), { force: true });
 };

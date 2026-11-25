@@ -1,17 +1,17 @@
-import { YEAR_TO_REVIEW } from "../year.js";
+import type { DateRange } from "../../helpers/date-range.js";
+import {
+  rangeEndDateTime,
+  rangeStartDateTime,
+} from "../../helpers/date-range.js";
 
-export const baseQuery = `
-openIssues: issues(filterBy: {since: "${YEAR_TO_REVIEW}-01-01T00:00:00.000Z"}, states: OPEN) {
-	totalCount
-}
-closedIssues: issues(filterBy: {since: "${YEAR_TO_REVIEW}-01-01T00:00:00.000Z"}, states: CLOSED) {
-	totalCount
-}
+// Nested in user(login: …) or viewer. Issue counts are fetched separately
+// with a date-filtered search (see issues.query.ts).
+export const baseQuery = (range: DateRange) => `
 avatarUrl
 login
 contributionsCollection(
-	from: "${YEAR_TO_REVIEW}-01-01T00:00:00.000Z"
-	to: "${YEAR_TO_REVIEW + 1}-01-01T00:00:00.000Z"
+	from: "${rangeStartDateTime(range)}"
+	to: "${rangeEndDateTime(range)}"
 ) {
 	totalCommitContributions
 	restrictedContributionsCount
@@ -66,8 +66,6 @@ contributionsCollection(
 `;
 
 export type BaseQueryResponse = {
-  openIssues: { totalCount: number };
-  closedIssues: { totalCount: number };
   avatarUrl: string;
   login: string;
   contributionsCollection: {

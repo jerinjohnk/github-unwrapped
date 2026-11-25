@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { z } from "zod";
+import { reviewYearRange } from "../helpers/date-range.js";
 import {
   backendCredentials,
   makeRedirectUriBackend,
@@ -77,6 +78,7 @@ export const loginEndPoint = async (request: Request, response: Response) => {
     loggedInWithGitHub: true,
     token: access_token,
     username: null,
+    range: reviewYearRange(),
   });
 
   if (!stats) {
@@ -87,11 +89,14 @@ export const loginEndPoint = async (request: Request, response: Response) => {
   clearRendersForUsername({ username: stats.username });
   clearImagesForUsername({ username: stats.username });
 
-  await insertProfileStats({
-    type: "found",
-    profile: stats,
-    lowercasedUsername: stats.username.toLowerCase(),
-  });
+  await insertProfileStats(
+    {
+      type: "found",
+      profile: stats,
+      lowercasedUsername: stats.username.toLowerCase(),
+    },
+    stats.range,
+  );
 
   return response.redirect(`/${stats.username}`);
 };

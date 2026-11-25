@@ -137,6 +137,7 @@ export const Main: React.FC<Schema> = ({
   sampleStarredRepos,
   totalContributions,
   longestStreak,
+  periodLabel,
 }) => {
   const { durationInFrames } = useVideoConfig();
 
@@ -219,6 +220,7 @@ export const Main: React.FC<Schema> = ({
               contributionData={contributionData}
               planet={planet}
               username={login}
+              periodLabel={periodLabel}
             />
           </AbsoluteFill>
         </Series.Sequence>

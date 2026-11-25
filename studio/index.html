@@ -1,0 +1,429 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Unwrapped Studio</title>
+<style>
+:root {
+  --bg: #f5f6f8; --card: #fff; --ink: #18202a; --muted: #5d6b7a; --line: #dde2e8;
+  --accent: #0e6e8c; --accent-ink: #fff; --soft: #e8f3f6; --warn: #9a3412; --warn-soft: #fff1e6;
+  --ok: #166534; --chip: #eef1f4; --focus: #0e6e8c55;
+  --g0: #ebedf0; --g1: #9be9a8; --g2: #40c463; --g3: #30a14e; --g4: #216e39;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0d1419; --card: #151f27; --ink: #e6edf2; --muted: #93a3b1; --line: #26333e;
+    --accent: #4fb3cf; --accent-ink: #062029; --soft: #10303a; --warn: #fdba74; --warn-soft: #3a2414;
+    --ok: #86efac; --chip: #1e2a34; --focus: #4fb3cf55;
+    --g0: #1e2a34; --g1: #0e4429; --g2: #006d32; --g3: #26a641; --g4: #39d353;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+a { color: var(--accent); }
+header { max-width: 1100px; margin: 0 auto; padding: 28px 16px 8px; }
+header h1 { margin: 0; font-size: 24px; letter-spacing: -0.3px; }
+header p { margin: 4px 0 0; color: var(--muted); }
+main { max-width: 1100px; margin: 0 auto; padding: 8px 16px 64px; display: grid; gap: 16px; }
+
+details.step { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 0 20px; }
+details.step > summary { list-style: none; cursor: pointer; padding: 16px 0; display: flex; gap: 10px; align-items: center; font-size: 16px; font-weight: 650; }
+details.step[open] > summary { padding-bottom: 4px; }
+details.step > .body { padding-bottom: 18px; }
+details > summary::-webkit-details-marker { display: none; }
+summary .chev { margin-left: auto; color: var(--muted); transition: transform .15s; font-size: 12px; }
+details[open] > summary .chev { transform: rotate(90deg); }
+summary .meta { font-weight: 400; font-size: 13px; color: var(--muted); overflow-wrap: anywhere; }
+summary .n { width: 24px; height: 24px; border-radius: 50%; background: var(--accent); color: var(--accent-ink);
+  display: inline-grid; place-items: center; font-size: 13px; flex: none; }
+
+.hint { margin: 0 0 14px; color: var(--muted); }
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+input[type=text], input[type=password], input[type=date] {
+  font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; min-width: 0; }
+input:focus, button:focus-visible, summary:focus-visible { outline: 3px solid var(--focus); outline-offset: 1px; }
+button { font: inherit; border: 1px solid var(--line); background: var(--card); color: var(--ink); border-radius: 8px; padding: 7px 12px; cursor: pointer; }
+button:hover:not(:disabled) { border-color: var(--accent); }
+button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
+button:disabled { opacity: .5; cursor: default; }
+.grow { flex: 1 1 260px; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+.chip { border-radius: 999px; padding: 5px 12px; background: var(--chip); border: 1px solid transparent; }
+.chip[aria-pressed=true] { background: var(--soft); border-color: var(--accent); color: var(--accent); font-weight: 600; }
+.muted { color: var(--muted); }
+.status { margin-top: 10px; min-height: 1.4em; }
+.error { color: var(--warn); background: var(--warn-soft); border-radius: 8px; padding: 8px 12px; }
+.hidden { display: none !important; }
+label.check { display: inline-flex; gap: 6px; align-items: center; color: var(--muted); }
+.spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--line); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; vertical-align: -2px; margin-right: 6px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.stat { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+.stat b { display: block; font-size: 22px; font-variant-numeric: tabular-nums; letter-spacing: -0.3px; }
+.stat span { color: var(--muted); font-size: 12.5px; }
+.stale { opacity: .45; }
+.heat { display: grid; grid-auto-flow: column; grid-template-rows: repeat(7, 10px); grid-auto-columns: 10px; gap: 2px; overflow-x: auto; padding: 12px 0 4px; }
+.heat i { width: 10px; height: 10px; border-radius: 2px; background: var(--g0); }
+.langs { display: flex; gap: 6px 16px; flex-wrap: wrap; margin-top: 10px; font-size: 13px; }
+.langs i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+
+.progress { height: 8px; border-radius: 4px; background: var(--chip); overflow: hidden; margin-top: 12px; }
+.progress span { display: block; height: 100%; width: 0; background: var(--accent); transition: width .4s; }
+video { display: block; width: 100%; max-width: 540px; border-radius: 10px; margin-top: 14px; background: #000; }
+@media (max-width: 640px) {
+  details.step { padding: 0 14px; }
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>Unwrapped Studio</h1>
+  <p>Make a GitHub year-in-review video for any date range (in IST). Runs on this computer; your key is never saved.</p>
+</header>
+
+<main>
+  <details class="step" id="s-key" open>
+    <summary><span class="n">1</span>GitHub key <span class="meta" id="key-meta"></span><span class="chev" aria-hidden="true">▶</span></summary>
+    <div class="body">
+      <p class="hint">A personal access token from
+        <a href="https://github.com/settings/tokens" target="_blank" rel="noopener">github.com/settings/tokens</a>
+        (no scopes needed for public data). It stays in this tab's memory, is sent only to this local server for
+        the GitHub requests, and is not written to disk. <span id="env-hint"></span></p>
+      <div class="row">
+        <input type="password" id="key" class="grow" placeholder="ghp_…" autocomplete="off" spellcheck="false"
+          aria-label="GitHub personal access token">
+        <button type="button" id="key-toggle" aria-pressed="false">Show</button>
+      </div>
+    </div>
+  </details>
+
+  <details class="step" id="s-user" open>
+    <summary><span class="n">2</span>GitHub user <span class="meta" id="user-meta"></span><span class="chev" aria-hidden="true">▶</span></summary>
+    <div class="body">
+      <p class="hint">Whose year to unwrap.</p>
+      <input type="text" id="username" class="grow" placeholder="octocat" autocomplete="off" spellcheck="false"
+        aria-label="GitHub username" style="width: min(100%, 360px)">
+    </div>
+  </details>
+
+  <details class="step" id="s-range" open>
+    <summary><span class="n">3</span>Date range <span class="meta" id="range-meta"></span><span class="chev" aria-hidden="true">▶</span></summary>
+    <div class="body">
+      <p class="hint">Every number in the video is filtered to this range: contributions, the contribution grid,
+        longest streak, pull requests, issues, stars, commits (top day and hour) and languages.
+        Dates and times are in <b>IST</b> (UTC+05:30): a range runs from midnight to midnight IST.
+        GitHub limits a range to one year.</p>
+      <div class="chips" id="presets" role="group" aria-label="Date range presets"></div>
+      <div class="row">
+        <label class="muted" for="from">From</label>
+        <input type="date" id="from">
+        <label class="muted" for="to">To</label>
+        <input type="date" id="to">
+      </div>
+      <div class="status" id="range-info"></div>
+      <div class="row" style="margin-top: 6px">
+        <button class="primary" type="button" id="fetch-btn">Fetch stats</button>
+        <label class="check"><input type="checkbox" id="refresh"> Refetch from GitHub (ignore cached stats)</label>
+      </div>
+      <div class="status" id="fetch-status"></div>
+    </div>
+  </details>
+
+  <details class="step hidden" id="s-stats" open>
+    <summary><span class="n">4</span>Stats <span class="meta" id="stats-meta"></span><span class="chev" aria-hidden="true">▶</span></summary>
+    <div class="body" id="stats-body">
+      <div class="stats" id="stats"></div>
+      <div class="heat" id="heat" aria-label="Contributions per day in the range"></div>
+      <div class="langs" id="langs"></div>
+    </div>
+  </details>
+
+  <details class="step hidden" id="s-video" open>
+    <summary><span class="n">5</span>Video <span class="meta" id="video-meta"></span><span class="chev" aria-hidden="true">▶</span></summary>
+    <div class="body">
+      <p class="hint">Pick a rocket and generate. The first render prepares the project and takes a few minutes;
+        later ones take about 1–2 minutes. Videos are cached in <code>.local-data/renders/</code>.</p>
+      <div class="chips" id="themes" role="group" aria-label="Rocket colour"></div>
+      <button class="primary" type="button" id="render-btn">Generate video</button>
+      <div class="progress hidden" id="progress"><span></span></div>
+      <div class="status" id="render-status"></div>
+      <video id="video" class="hidden" controls playsinline></video>
+      <div class="row hidden" id="video-links" style="margin-top: 10px">
+        <a id="download" download>Download MP4</a>
+      </div>
+    </div>
+  </details>
+</main>
+
+<script id="cfg" type="application/json">__STUDIO_CONFIG__</script>
+<script>
+(() => {
+  "use strict";
+  const CFG = JSON.parse(document.getElementById("cfg").textContent);
+  const $ = (id) => document.getElementById(id);
+  const WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+  const fmt = (n) => Number(n).toLocaleString();
+
+  // The key lives only in this variable and the input field.
+  let fetched = null; // { username, from, to, stats }
+  let theme = CFG.themes[0];
+  let rendering = false;
+
+  // ---------- Dates (UTC, YYYY-MM-DD) ----------
+  const ISO = /^\d{4}-\d{2}-\d{2}$/;
+  const toIso = (d) => d.toISOString().slice(0, 10);
+  const parse = (s) => {
+    if (!ISO.test(s)) return null;
+    const d = new Date(s + "T00:00:00Z");
+    return Number.isNaN(d.getTime()) || toIso(d) !== s ? null : d;
+  };
+  const maxEnd = (from) => {
+    const d = parse(from);
+    d.setUTCFullYear(d.getUTCFullYear() + 1);
+    d.setUTCDate(d.getUTCDate() - 1);
+    return toIso(d);
+  };
+  const days = (from, to) => Math.round((parse(to) - parse(from)) / 86400000) + 1;
+  const label = (from, to) => from.slice(0, 4) === to.slice(0, 4)
+    ? from.slice(0, 4) : `${from.slice(0, 4)}–${to.slice(2, 4)}`;
+  const pretty = (s) => parse(s).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+
+  const rangeError = (from, to) => {
+    if (!parse(from) || !parse(to)) return "Choose a start and an end date.";
+    if (from > to) return "The start date must be on or before the end date.";
+    if (to > maxEnd(from)) return `GitHub limits a range to one year: the end date can be ${pretty(maxEnd(from))} at the latest.`;
+    return null;
+  };
+
+  // ---------- Presets ----------
+  const presetBox = $("presets");
+  const presetButtons = [];
+  const addChip = (box, text, onClick) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "chip"; b.textContent = text;
+    b.setAttribute("aria-pressed", "false");
+    b.addEventListener("click", onClick);
+    box.appendChild(b);
+    return b;
+  };
+  for (const p of CFG.presets) {
+    const b = addChip(presetBox, p.label, () => { $("from").value = p.range.from; $("to").value = p.range.to; update(); });
+    presetButtons.push({ b, p });
+  }
+  const customChip = addChip(presetBox, "Custom", () => $("from").focus());
+
+  const def = CFG.presets.find((p) => p.id === CFG.defaultId) || CFG.presets[0];
+  $("from").value = def.range.from;
+  $("to").value = def.range.to;
+
+  // ---------- Themes ----------
+  const themeButtons = CFG.themes.map((t) => {
+    const b = addChip($("themes"), t[0].toUpperCase() + t.slice(1) + " rocket", () => { theme = t; resetVideo(); paintThemes(); });
+    return { b, t };
+  });
+  const paintThemes = () => themeButtons.forEach(({ b, t }) => b.setAttribute("aria-pressed", String(t === theme)));
+  paintThemes();
+
+  // ---------- Key ----------
+  $("env-hint").textContent = CFG.hasEnvKey
+    ? "Leave it empty to use GITHUB_TOKEN from .env."
+    : "No GITHUB_TOKEN is set in .env, so a key is required.";
+  $("key-toggle").addEventListener("click", () => {
+    const show = $("key").type === "password";
+    $("key").type = show ? "text" : "password";
+    $("key-toggle").textContent = show ? "Hide" : "Show";
+    $("key-toggle").setAttribute("aria-pressed", String(show));
+  });
+
+  // ---------- State ----------
+  const current = () => ({ username: $("username").value.trim(), from: $("from").value, to: $("to").value });
+  const isStale = () => {
+    const c = current();
+    return !fetched || fetched.username.toLowerCase() !== c.username.toLowerCase() || fetched.from !== c.from || fetched.to !== c.to;
+  };
+
+  function update() {
+    const { username, from, to } = current();
+    const key = $("key").value.trim();
+    $("key-meta").textContent = key ? "· key entered" : CFG.hasEnvKey ? "· using .env" : "· required";
+    $("user-meta").textContent = username ? "· @" + username : "";
+
+    let matched = false;
+    for (const { b, p } of presetButtons) {
+      const on = p.range.from === from && p.range.to === to;
+      matched = matched || on;
+      b.setAttribute("aria-pressed", String(on));
+    }
+    customChip.setAttribute("aria-pressed", String(!matched));
+    if (parse(from)) $("to").max = maxEnd(from);
+
+    const err = rangeError(from, to);
+    const info = $("range-info");
+    if (err) {
+      info.className = "status error"; info.textContent = err;
+      $("range-meta").textContent = "";
+    } else {
+      info.className = "status muted";
+      info.textContent = `${fmt(days(from, to))} days, shown in the video as “${label(from, to)}”.`;
+      $("range-meta").textContent = `· ${pretty(from)} – ${pretty(to)}`;
+    }
+
+    const keyMissing = !key && !CFG.hasEnvKey;
+    $("fetch-btn").disabled = Boolean(err) || !username || keyMissing;
+
+    const stale = isStale();
+    $("stats-body").classList.toggle("stale", stale && Boolean(fetched));
+    $("stats-meta").textContent = fetched ? (stale ? "· out of date: fetch again" : `· @${fetched.stats.username}, ${pretty(fetched.from)} – ${pretty(fetched.to)}`) : "";
+    $("render-btn").disabled = stale || rendering;
+  }
+
+  for (const id of ["key", "username", "from", "to"]) $(id).addEventListener("input", update);
+
+  // ---------- API ----------
+  async function api(path, body) {
+    const res = await fetch(path, {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-studio-token": CFG.sessionToken },
+      body: JSON.stringify(body),
+    });
+    let json = null;
+    try { json = await res.json(); } catch (e) { /* not JSON */ }
+    if (!res.ok || !json) throw new Error((json && json.error) || `Request failed (${res.status})`);
+    return json;
+  }
+
+  const setStatus = (el, text, kind) => {
+    el.className = "status" + (kind === "error" ? " error" : kind === "muted" ? " muted" : "");
+    el.innerHTML = "";
+    if (kind === "busy") {
+      const s = document.createElement("span"); s.className = "spinner"; el.appendChild(s);
+    }
+    el.appendChild(document.createTextNode(text));
+  };
+
+  // ---------- Fetch stats ----------
+  $("fetch-btn").addEventListener("click", async () => {
+    const { username, from, to } = current();
+    const key = $("key").value.trim();
+    $("fetch-btn").disabled = true;
+    setStatus($("fetch-status"), "Fetching stats from GitHub… (up to a minute for busy accounts)", "busy");
+    try {
+      const stats = await api("/api/studio/stats", { key: key || undefined, username, from, to, refresh: $("refresh").checked });
+      fetched = { username, from, to, stats };
+      $("refresh").checked = false;
+      const at = new Date(stats.fetchedAt).toLocaleString(undefined, { timeZone: CFG.timeZone.iana, dateStyle: "medium", timeStyle: "short" });
+      setStatus($("fetch-status"), `Fetched ${at} ${CFG.timeZone.label}.`, "muted");
+      showStats(stats);
+      resetVideo();
+    } catch (err) {
+      setStatus($("fetch-status"), err.message, "error");
+    } finally {
+      update();
+    }
+  });
+
+  function showStats(s) {
+    $("s-stats").classList.remove("hidden");
+    $("s-video").classList.remove("hidden");
+    const items = [
+      [fmt(s.totalContributions), "Contributions"],
+      [fmt(s.longestStreak) + " d", "Longest streak"],
+      [`${fmt(s.activeDays)} / ${fmt(s.days)}`, "Active days"],
+      [fmt(s.totalPullRequests), "Pull requests opened"],
+      [fmt(s.openIssues), "Issues opened, still open"],
+      [fmt(s.closedIssues), "Issues opened, now closed"],
+      [fmt(s.totalStars), "Repositories starred"],
+      [WEEKDAYS[Number(s.topWeekday)] || "–", `Most productive day (${CFG.timeZone.label})`],
+      [String(s.topHour).padStart(2, "0") + ":00", `Most productive hour (${CFG.timeZone.label})`],
+    ];
+    const box = $("stats");
+    box.innerHTML = "";
+    for (const [value, name] of items) {
+      const d = document.createElement("div"); d.className = "stat";
+      const b = document.createElement("b"); b.textContent = value;
+      const sp = document.createElement("span"); sp.textContent = name;
+      d.append(b, sp); box.appendChild(d);
+    }
+
+    // Contribution grid, aligned so each column is a week starting on Sunday (like GitHub).
+    const heat = $("heat");
+    heat.innerHTML = "";
+    const max = Math.max(1, ...s.contributionData);
+    const pad = parse(s.range.from).getUTCDay();
+    for (let i = 0; i < pad; i++) { const e = document.createElement("i"); e.style.visibility = "hidden"; heat.appendChild(e); }
+    s.contributionData.forEach((c, i) => {
+      const e = document.createElement("i");
+      const level = c === 0 ? 0 : Math.min(4, Math.ceil((c / max) * 4));
+      e.style.background = `var(--g${level})`;
+      const day = new Date(parse(s.range.from).getTime() + i * 86400000);
+      e.title = `${toIso(day)}: ${c} contribution${c === 1 ? "" : "s"}`;
+      heat.appendChild(e);
+    });
+
+    const langs = $("langs");
+    langs.innerHTML = "";
+    if (!s.topLanguages.length) langs.textContent = "No languages found in this range.";
+    for (const l of s.topLanguages) {
+      const span = document.createElement("span");
+      const dot = document.createElement("i"); dot.style.background = l.color || "var(--muted)";
+      span.append(dot, document.createTextNode(`${l.languageName} ${Math.round(l.percent * 100)}%`));
+      langs.appendChild(span);
+    }
+  }
+
+  // ---------- Render ----------
+  function resetVideo() {
+    $("video").classList.add("hidden");
+    $("video").removeAttribute("src");
+    $("video-links").classList.add("hidden");
+    $("progress").classList.add("hidden");
+    $("video-meta").textContent = "";
+    if (!rendering) $("render-status").textContent = "";
+  }
+
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+  $("render-btn").addEventListener("click", async () => {
+    if (!fetched || isStale()) return;
+    const body = { username: fetched.stats.username, from: fetched.from, to: fetched.to, theme };
+    rendering = true;
+    update();
+    resetVideo();
+    $("progress").classList.remove("hidden");
+    const bar = $("progress").firstElementChild;
+    try {
+      for (;;) {
+        const res = await api("/api/studio/render", body);
+        if (res.type === "video-available") {
+          bar.style.width = "100%";
+          $("video").src = res.url;
+          $("video").classList.remove("hidden");
+          $("download").href = res.url;
+          $("download").setAttribute("download", `unwrapped-${body.username}-${body.from}_${body.to}.mp4`);
+          $("video-links").classList.remove("hidden");
+          $("video-meta").textContent = `· ${body.theme} rocket, ready`;
+          setStatus($("render-status"), "Done.", "muted");
+          break;
+        }
+        if (res.type === "render-error") throw new Error(res.error.split("\n")[0]);
+        const pct = Math.round(res.progress * 100);
+        bar.style.width = pct + "%";
+        setStatus($("render-status"), pct === 0 ? "Preparing the render…" : `Rendering… ${pct}%`, "busy");
+        await sleep(1500);
+      }
+    } catch (err) {
+      setStatus($("render-status"), err.message, "error");
+      $("progress").classList.add("hidden");
+    } finally {
+      rendering = false;
+      update();
+    }
+  });
+
+  update();
+})();
+</script>
+</body>
+</html>

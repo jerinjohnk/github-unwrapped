@@ -136,7 +136,16 @@ export const ContributionsScene: React.FC<{
   readonly rocket: Rocket;
   readonly planet: Planet;
   readonly username: string;
-}> = ({ contributionData, total, rocket, planet, username, longestStreak }) => {
+  readonly periodLabel?: string;
+}> = ({
+  contributionData,
+  total,
+  rocket,
+  planet,
+  username,
+  longestStreak,
+  periodLabel,
+}) => {
   const f = useCurrentFrame();
   const { fps } = useVideoConfig();
 
@@ -228,7 +237,10 @@ export const ContributionsScene: React.FC<{
               }}
             >
               <div style={{ textAlign: "left", paddingLeft: 10 }}>
-                <ContributionNumber currentNumber={YEAR_TO_REVIEW} suffix="" />
+                <ContributionNumber
+                  currentNumber={periodLabel ?? YEAR_TO_REVIEW}
+                  suffix=""
+                />
                 <ContributionLabel>@{username}</ContributionLabel>
               </div>
               <div style={{ flex: 1 }} />

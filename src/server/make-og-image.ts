@@ -19,6 +19,7 @@ const makeImageProps = (
   weekdays: profileStats.allWeekdays,
   longestStreak: profileStats.longestStreak,
   totalContributions: profileStats.totalContributions,
+  periodLabel: profileStats.periodLabel,
 });
 
 const makeOrGetImage = async (
@@ -38,7 +39,15 @@ const makeOrGetImage = async (
 };
 
 export const makeOrGetOgImage = (profileStats: ProfileStats) =>
-  makeOrGetImage(profileStats, "og-image", ogImageFile(profileStats.username));
+  makeOrGetImage(
+    profileStats,
+    "og-image",
+    ogImageFile(profileStats.username, profileStats.range),
+  );
 
 export const makeOrGetIgStory = (profileStats: ProfileStats) =>
-  makeOrGetImage(profileStats, "ig-story", igStoryFile(profileStats.username));
+  makeOrGetImage(
+    profileStats,
+    "ig-story",
+    igStoryFile(profileStats.username, profileStats.range),
+  );

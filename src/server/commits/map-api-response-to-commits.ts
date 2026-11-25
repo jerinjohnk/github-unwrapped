@@ -1,10 +1,13 @@
-import { YEAR_TO_REVIEW } from "../year.js";
+import type { DateRange } from "../../helpers/date-range.js";
+import { isInRange } from "../../helpers/date-range.js";
+import { istParts } from "../../helpers/timezone.js";
 import type { Commit, commits } from "./commits.js";
 
 type CommitsApiResponse = typeof commits;
 
 export const mapApiResponseToCommits = (
   commitApiResponse: CommitsApiResponse,
+  range: DateRange,
 ): Commit[] => {
   return commitApiResponse.items
     .map((commit): Commit | null => {
@@ -13,19 +16,20 @@ export const mapApiResponseToCommits = (
       }
 
       const { date } = commit.commit.author;
-      if (!date.startsWith(String(YEAR_TO_REVIEW))) {
+      if (!isInRange(date, range)) {
         return null;
       }
 
-      const hour = date.match(/T([0-9]+)/);
-      if (!hour) {
+      const timestamp = new Date(date).getTime();
+      if (Number.isNaN(timestamp)) {
         return null;
       }
 
       return {
         author: commit.author.login,
-        date: new Date(commit.commit.author.date).getTime(),
-        hour: Number(hour[1]),
+        date: timestamp,
+        // Hour of day in IST, whatever timezone the commit was made in.
+        hour: istParts(timestamp).hour,
         message: commit.commit.message,
         repo: commit.repository.owner.login + "/" + commit.repository.name,
         fork: commit.repository.fork,

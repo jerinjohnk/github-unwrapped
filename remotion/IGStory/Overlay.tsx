@@ -23,6 +23,7 @@ export const Overlay: React.FC<{
   readonly topLanguage: TopLanguage | null;
   readonly longestStreak: number;
   readonly totalContributions: number;
+  readonly periodLabel?: string;
 }> = ({
   issues,
   contributionData,
@@ -33,6 +34,7 @@ export const Overlay: React.FC<{
   topLanguage,
   longestStreak,
   totalContributions,
+  periodLabel,
 }) => {
   return (
     <AbsoluteFill
@@ -84,6 +86,7 @@ export const Overlay: React.FC<{
           login={login}
           longestStreak={longestStreak}
           totalContributions={totalContributions}
+          periodLabel={periodLabel}
           graphData={contributionData}
         />
       </div>

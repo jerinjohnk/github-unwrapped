@@ -1,4 +1,5 @@
 import type { Weekday } from "../../config.js";
+import { istParts } from "../../helpers/timezone.js";
 
 export const commits = {
   total_count: 26795,
@@ -258,8 +259,8 @@ export const getMostProductive = (response: Commit[]): Weekdays => {
     6: 0,
   };
   for (const r of response) {
-    const date = new Date(r.date);
-    const day = date.getDay();
+    // Weekday in IST (0 = Sunday), whatever timezone the server runs in.
+    const day = istParts(r.date).weekday;
     const europeanDay = remapWeekdays(day);
     weekdays[europeanDay] += 1;
   }

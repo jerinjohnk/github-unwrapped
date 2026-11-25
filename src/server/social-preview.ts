@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+import { reviewYearRange } from "../helpers/date-range.js";
 import { makeOrGetIgStory, makeOrGetOgImage } from "./make-og-image.js";
 import { getProfileStatsFromCache } from "./store.js";
 
@@ -7,7 +8,8 @@ const getStats = async (username: string | string[] | undefined) => {
     throw new Error("No username provided");
   }
 
-  const stats = await getProfileStatsFromCache(username);
+  // Social previews belong to the original app, which reviews YEAR_TO_REVIEW.
+  const stats = getProfileStatsFromCache(username, reviewYearRange());
   if (stats === "not-found" || stats === null) {
     throw new Error("No image for this user " + username);
   }

@@ -5,6 +5,7 @@ import { getGithubToken } from "./github-token.js";
 import { backendCredentials } from "../helpers/domain.js";
 import { getStatsFromGitHubOrCache } from "./get-stats-from-github-or-cache.js";
 import { YEAR_TO_REVIEW } from "./year.js";
+import { reviewYearRange } from "../helpers/date-range.js";
 
 type AppHead = {
   status: number;
@@ -55,6 +56,7 @@ const makeAppHead = async (
     username,
     token: getGithubToken(),
     refreshCache: false,
+    range: reviewYearRange(),
   });
 
   if (stats === "not-found") {

@@ -36,7 +36,35 @@ npm install
 cp .env.example .env   # then paste your token into GITHUB_TOKEN
 ```
 
-### Generate a video in the web app
+### Generate a video for any date range (Studio)
+
+```console
+npm run dev
+```
+
+Open http://localhost:8080/studio. The page walks through five steps:
+
+1. **GitHub key**: paste a personal access token. It stays in the tab's memory and is only used for
+   that request's GitHub calls; it is never written to disk or logged. Leave it empty to use
+   `GITHUB_TOKEN` from `.env`.
+2. **GitHub user** whose activity to unwrap.
+3. **Date range**: _This year so far_, _Last year_, _Last 12 months_, or custom dates. The default is
+   this year so far from 1 July onwards, and the whole of last year before that. GitHub limits a range
+   to one year.
+4. **Stats**: press **Fetch stats** to preview the numbers for the range.
+5. **Video**: pick a rocket colour and press **Generate video**, then watch or download it.
+
+Every number is filtered to the range: contributions and the contribution grid, longest streak,
+pull requests and issues opened, repositories starred, commits (most productive day and hour) and
+languages. The video labels the period "2026", or "2025–26" when a range crosses a year.
+
+**All dates and times are in IST (UTC+05:30).** A range runs from midnight to midnight IST, and
+the most productive day and hour are given in IST, whatever timezone a commit was made in or the
+server runs in. The timezone is set in [`src/helpers/timezone.ts`](src/helpers/timezone.ts).
+
+The server only listens on `127.0.0.1`. Set `HOST=0.0.0.0` to expose it on your network.
+
+### Generate a video in the original web app
 
 ```console
 npm run dev
@@ -47,11 +75,11 @@ project and takes a few minutes. After that, the MP4 is cached and downloadable.
 
 Local data lives in `.local-data/` (gitignored):
 
-| Path                                     | Contents                    |
-| ---------------------------------------- | --------------------------- |
-| `.local-data/stats/<user>.json`          | Cached GitHub stats         |
-| `.local-data/renders/<user>-<theme>.mp4` | Rendered videos             |
-| `.local-data/og/`, `.local-data/ig/`     | Social preview / IG stories |
+| Path                                                 | Contents                    |
+| ---------------------------------------------------- | --------------------------- |
+| `.local-data/stats/<user>/<from>_<to>.json`          | Cached GitHub stats         |
+| `.local-data/renders/<user>/<theme>_<from>_<to>.mp4` | Rendered videos             |
+| `.local-data/og/<user>/`, `.local-data/ig/<user>/`   | Social preview / IG stories |
 
 To refetch a user's stats and re-render, visit `/<username>?reset=true` or delete their files there.
 

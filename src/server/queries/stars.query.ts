@@ -5,6 +5,7 @@ starredRepositories(first:100,${
   } orderBy: {field: STARRED_AT, direction: DESC}) {
     totalCount
     pageInfo {
+        hasNextPage
         endCursor
     }
     edges {
@@ -23,6 +24,7 @@ export type StarredReposQueryResponse = {
   starredRepositories: {
     totalCount: number;
     pageInfo: {
+      hasNextPage: boolean;
       endCursor: string;
     };
     edges: Array<{

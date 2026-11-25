@@ -20,6 +20,12 @@ import { loginEndPoint } from "./login.js";
 import { renderEndPoint } from "./render.js";
 import { igStoryImageEndpoint, socialMediaPreview } from "./social-preview.js";
 import { rendersDir } from "./store.js";
+import {
+  studioGuard,
+  studioPage,
+  studioRender,
+  studioStats,
+} from "./studio.js";
 
 const apiEndpointWrapper = (
   endpoint: (
@@ -81,6 +87,12 @@ export const startServer = async () => {
       setHeaders: (res) => res.setHeader("Content-Disposition", "attachment"),
     }),
   );
+
+  // Commitscape-style form: key, user and date range (see studio.ts).
+  app.get("/studio", studioPage);
+  app.use("/api/studio", studioGuard);
+  app.post("/api/studio/stats", studioStats);
+  app.post("/api/studio/render", studioRender);
 
   app.get("/favicon.ico", apiEndpointWrapper(faviconEndPoint));
   app.get(REDIRECT_URL_ENDPOINT, apiEndpointWrapper(loginEndPoint));
@@ -145,6 +157,10 @@ export const startServer = async () => {
 
   const port = process.env.PORT || 8080;
 
-  app.listen(port);
+  // Only reachable from this machine unless HOST says otherwise (e.g. HOST=0.0.0.0).
+  const host = process.env.HOST || "127.0.0.1";
+
+  app.listen(Number(port), host);
   console.log(`Listening on http://localhost:${port}`);
+  console.log(`Studio (key + date range): http://localhost:${port}/studio`);
 };

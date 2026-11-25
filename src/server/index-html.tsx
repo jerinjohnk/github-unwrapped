@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "path";
 import type { ViteDevServer } from "vite";
+import { reviewYearRange } from "../helpers/date-range.js";
 import { backendCredentials } from "../helpers/domain.js";
 import { replaceAppHead } from "./seo.js";
 import { getProfileStatsFromCache } from "./store.js";
@@ -49,7 +50,7 @@ export const indexHtmlDev = (
         return;
       }
 
-      const cachedStats = await getProfileStatsFromCache(username);
+      const cachedStats = getProfileStatsFromCache(username, reviewYearRange());
 
       if (cachedStats === null) {
         response.redirect(`/loading/${username}`);
@@ -92,7 +93,7 @@ export const indexHtmlProduction = ({
         return;
       }
 
-      const cachedStats = await getProfileStatsFromCache(username);
+      const cachedStats = getProfileStatsFromCache(username, reviewYearRange());
 
       if (cachedStats === null) {
         response.redirect(`/loading/${username}`);

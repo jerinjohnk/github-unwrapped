@@ -5,7 +5,7 @@ import { REDIRECT_URL_ENDPOINT } from "./redirect-url.js";
 const parseBackendCredentials = () => {
   return z
     .object({
-      // Required: a GitHub personal access token (no scopes needed for public data).
+      // A GitHub personal access token (no scopes needed for public data).
       // GITHUB_TOKEN_1 is still accepted for backwards compatibility.
       GITHUB_TOKEN: z
         .string()
@@ -24,19 +24,11 @@ const parseBackendCredentials = () => {
       VITE_CLIENT_ID: z.string().optional(),
       CLIENT_SECRET: z.string().optional(),
     })
-    .transform(({ GITHUB_TOKEN, GITHUB_TOKEN_1, ...rest }, ctx) => {
-      const token = GITHUB_TOKEN ?? GITHUB_TOKEN_1;
-      if (!token) {
-        ctx.addIssue({
-          code: "custom",
-          message:
-            "GITHUB_TOKEN is missing. Create a personal access token at https://github.com/settings/tokens and add it to your .env file.",
-        });
-        return z.NEVER;
-      }
-
-      return { ...rest, GITHUB_TOKEN: token };
-    })
+    .transform(({ GITHUB_TOKEN, GITHUB_TOKEN_1, ...rest }) => ({
+      ...rest,
+      // Optional: the /studio page can supply a key per session instead.
+      GITHUB_TOKEN: GITHUB_TOKEN ?? GITHUB_TOKEN_1,
+    }))
     .parse(process.env);
 };
 

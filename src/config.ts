@@ -127,11 +127,21 @@ export const compositionSchema = z.object({
   totalContributions: z.number(),
   longestStreak: z.number(),
   sampleStarredRepos: z.array(starredRepoExample),
+  // Shown where the video names the period, e.g. "2026" or "2025–26".
+  periodLabel: z.string().optional(),
 });
+
+// `from`/`to` (YYYY-MM-DD, inclusive) pick the review period; omitted means
+// the whole of YEAR_TO_REVIEW, as in the original app.
+const optionalRange = {
+  from: z.string().optional(),
+  to: z.string().optional(),
+};
 
 export const RenderRequest = z.object({
   username: z.string(),
   theme: rocketSchema,
+  ...optionalRange,
 });
 
 export type RenderResponse =
@@ -156,6 +166,7 @@ export const ProgressRequest = z.object({
 export const StatsRequest = z.object({
   username: z.string(),
   refreshCache: z.boolean().optional().default(false),
+  ...optionalRange,
 });
 
 export const generateRandomCorner = ({
@@ -171,6 +182,9 @@ export const generateRandomCorner = ({
 };
 
 export type ProfileStats = {
+  // The inclusive date range every number below was filtered to.
+  range: { from: string; to: string };
+  periodLabel: string;
   totalPullRequests: number;
   username: string;
   lowercasedUsername: string;
@@ -290,6 +304,7 @@ export const computeCompositionParameters = (
     contributionData: userStats.contributionData,
     sampleStarredRepos: userStats.sampleStarredRepos,
     longestStreak: userStats.longestStreak,
+    periodLabel: userStats.periodLabel,
   };
 };
 
@@ -303,4 +318,5 @@ export const ogImageSchema = z.object({
   topLanguage: languageSchema.or(z.null()),
   longestStreak: z.number(),
   totalContributions: z.number(),
+  periodLabel: z.string().optional(),
 });

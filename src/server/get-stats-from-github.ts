@@ -1,15 +1,16 @@
 import { interpolate } from "remotion";
 import type { Hour, ProfileStats } from "../config.js";
+import type { DateRange } from "../helpers/date-range.js";
+import { isInRange, periodLabel } from "../helpers/date-range.js";
 import { getMostProductive } from "./commits/commits.js";
 import { getTimesOfDay } from "./commits/get-times-of-day.js";
 import { getALotOfGithubCommits } from "./commits/github-commits.js";
 import { executeGitHubGraphQlQuery } from "./fetch-stats.js";
-import { getMorePullRequests } from "./get-more-pull-requests.js";
 import { getMoreStars } from "./get-more-stars.js";
 import type { BaseQueryResponse } from "./queries/base.query.js";
 import { baseQuery } from "./queries/base.query.js";
 import { getQuery } from "./queries/query.js";
-import { YEAR_TO_REVIEW } from "./year.js";
+import { getSearchCounts } from "./queries/search-counts.query.js";
 
 const NOT_LANGUAGES = [
   "html",
@@ -27,28 +28,29 @@ export const getStatsFromGitHub = async ({
   username,
   token,
   loggedInWithGitHub,
+  range,
 }: {
   username: string | null;
   token: string;
   loggedInWithGitHub: boolean;
+  // Every number in the result is filtered to this inclusive date range.
+  range: DateRange;
 }): Promise<ProfileStats | null> => {
   const fetchedAt = Date.now();
 
   const baseData = (await executeGitHubGraphQlQuery({
     username,
     token,
-    query: getQuery(username, baseQuery),
+    query: getQuery(username, baseQuery(range)),
   })) as BaseQueryResponse | null;
   if (baseData === null) {
     return baseData;
   }
 
-  const [commits, morePullRequests, stars] = await Promise.all([
-    username
-      ? getALotOfGithubCommits(username, token)
-      : getALotOfGithubCommits(baseData.login, token),
-    getMorePullRequests({ username, token }),
-    getMoreStars({ token, username }),
+  const [commits, stars, counts] = await Promise.all([
+    getALotOfGithubCommits(username ?? baseData.login, token, range),
+    getMoreStars({ token, username, range }),
+    getSearchCounts({ login: baseData.login, token, range }),
   ]);
 
   const acc: Record<string, { color: string | null; value: number }> = {};
@@ -115,28 +117,36 @@ export const getStatsFromGitHub = async ({
   const allDays = baseData.contributionsCollection.contributionCalendar.weeks
     .map((w) => w.contributionDays)
     .flat(1)
-    .filter((d) => d.date.startsWith(String(YEAR_TO_REVIEW)));
+    .filter((d) => isInRange(d.date, range));
 
   let longestStreak = 0;
   let currentStreak = 0;
   for (const day of allDays) {
     if (day.contributionCount > 0) {
       currentStreak++;
-    } else {
+      // Also counts a streak that is still running at the end of the range.
       longestStreak = Math.max(longestStreak, currentStreak);
+    } else {
       currentStreak = 0;
     }
   }
 
   return {
+    range,
+    periodLabel: periodLabel(range),
     longestStreak,
-    totalPullRequests: morePullRequests.length,
+    totalPullRequests: counts.pullRequests,
     topLanguages,
     totalStars: stars.length,
-    totalContributions:
-      baseData.contributionsCollection.contributionCalendar.totalContributions,
-    closedIssues: baseData.closedIssues.totalCount,
-    openIssues: baseData.openIssues.totalCount,
+    // Sum of the in-range days (what the grid shows), so totals of adjacent
+    // ranges add up. GitHub's calendar total can include activity from days
+    // just outside the range, as its day boundaries are not IST midnights.
+    totalContributions: allDays.reduce(
+      (sum, d) => sum + d.contributionCount,
+      0,
+    ),
+    closedIssues: counts.closedIssues,
+    openIssues: counts.openIssues,
     fetchedAt,
     loggedInWithGitHub,
     username: baseData.login,

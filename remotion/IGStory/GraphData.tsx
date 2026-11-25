@@ -39,7 +39,7 @@ const Dot: React.FC<{
 };
 
 const Stat: React.FC<{
-  readonly data: number;
+  readonly data: number | string;
   readonly label: string;
   readonly align: "left" | "right";
 }> = ({ data, label, align }) => {
@@ -62,7 +62,8 @@ export const ContributionGraphic: React.FC<{
   readonly totalContributions: number;
   readonly longestStreak: number;
   readonly login: string;
-}> = ({ graphData, totalContributions, longestStreak, login }) => {
+  readonly periodLabel?: string;
+}> = ({ graphData, totalContributions, longestStreak, login, periodLabel }) => {
   return (
     <div
       style={{
@@ -78,7 +79,7 @@ export const ContributionGraphic: React.FC<{
           paddingLeft: 20,
         }}
       >
-        <Stat align="left" data={YEAR_TO_REVIEW} label={login} />
+        <Stat align="left" data={periodLabel ?? YEAR_TO_REVIEW} label={login} />
         <div style={{ flex: 1 }} />
         <Stat align="right" data={longestStreak} label="Longest streak" />
         <div style={{ width: 30 }} />

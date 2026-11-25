@@ -15,6 +15,7 @@ export const IgStoryContent: React.FC<z.infer<typeof ogImageSchema>> = ({
   topLanguage,
   longestStreak,
   totalContributions,
+  periodLabel,
 }) => {
   return (
     <AbsoluteFill>
@@ -28,6 +29,7 @@ export const IgStoryContent: React.FC<z.infer<typeof ogImageSchema>> = ({
         topLanguage={topLanguage}
         longestStreak={longestStreak}
         totalContributions={totalContributions}
+        periodLabel={periodLabel}
       />
     </AbsoluteFill>
   );

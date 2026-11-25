@@ -1,16 +1,23 @@
-import { YEAR_TO_REVIEW } from "../year.js";
+import type { DateRange } from "../../helpers/date-range.js";
+import { searchDateRange } from "../../helpers/date-range.js";
+import { badKeyError, rateLimitError } from "../github-errors.js";
 import type { Commit, commits } from "./commits.js";
 import { mapApiResponseToCommits } from "./map-api-response-to-commits.js";
 
-const RATE_LIMIT_TOKEN = "rate-limit-token";
+const PER_PAGE = 100;
 
 const getGithubCommits = async (
   username: string,
   page: number,
   token: string,
+  range: DateRange,
 ) => {
+  // author-date restricts the search to commits authored within the range (IST).
+  const query = encodeURIComponent(
+    `author:${username} merge:false author-date:${searchDateRange(range)}`,
+  );
   const response = await fetch(
-    `https://api.github.com/search/commits?q=author:${username}%20merge:false&sort=author-date&order=desc&page=${page}&per_page=100`,
+    `https://api.github.com/search/commits?q=${query}&sort=author-date&order=desc&page=${page}&per_page=${PER_PAGE}`,
     {
       method: "get",
       headers: {
@@ -34,7 +41,11 @@ const getGithubCommits = async (
 
   if (rateLimitHit) {
     console.warn("GitHub REST rate limit hit");
-    throw new TypeError(RATE_LIMIT_TOKEN);
+    throw rateLimitError("search");
+  }
+
+  if (response.status === 401) {
+    throw badKeyError();
   }
 
   if (response.status !== 200) {
@@ -42,11 +53,9 @@ const getGithubCommits = async (
   }
 
   const json = (await response.json()) as typeof commits;
-  const listOfCommits = mapApiResponseToCommits(json);
-  const isDone =
-    listOfCommits.length === 0 ||
-    listOfCommits[listOfCommits.length - 1].date <
-      new Date(`${YEAR_TO_REVIEW}-01-01`).getTime();
+  const listOfCommits = mapApiResponseToCommits(json, range);
+  // A short page means there are no further results.
+  const isDone = json.items.length < PER_PAGE;
   return {
     commits: listOfCommits,
     isDone,
@@ -56,13 +65,19 @@ const getGithubCommits = async (
 export const getALotOfGithubCommits = async (
   username: string,
   token: string,
+  range: DateRange,
 ) => {
   const listOfCommits: Commit[] = [];
 
   const pages = [1, 2, 3];
 
   for (const page of pages) {
-    const { commits, isDone } = await getGithubCommits(username, page, token);
+    const { commits, isDone } = await getGithubCommits(
+      username,
+      page,
+      token,
+      range,
+    );
     listOfCommits.push(...commits);
     if (isDone) {
       break;
